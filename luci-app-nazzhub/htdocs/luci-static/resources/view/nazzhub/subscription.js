@@ -95,31 +95,42 @@ function createSubscriptionContent(section, forkopMap) {
   };
 
   // Interactive paste & input listener on the rendered textarea
-  const origRender = o.render;
-  o.render = function (section_id, option_index, cfgvalue) {
-    const node = origRender.call(this, section_id, option_index, cfgvalue);
-    const textarea = node.querySelector("textarea");
-    if (textarea) {
-      const syncToMain = () => {
-        const val = textarea.value.trim();
-        const activeId = getActiveSubscriptionSectionId();
-        uci.set(UCI_PACKAGE, activeId, "section", TARGET_SECTION_NAME);
-        uci.set(UCI_PACKAGE, activeId, "url", val);
-        const statusEl = document.getElementById("nazzhub-sub-sync-status");
-        if (statusEl) {
-          if (val) {
-            statusEl.innerHTML = `✅ <span style="color: #28a745; font-weight: bold;">Привязано к секции Main:</span> <span style="font-family: monospace; font-size: 0.9em; word-break: break-all;">${val.length > 70 ? val.substring(0, 70) + "..." : val}</span>`;
-          } else {
-            statusEl.innerHTML = `⚠️ <span style="color: #dc3545;">Поле пустое. Вставьте ссылку на подписку.</span>`;
+  const origRenderWidget = o.renderWidget;
+  o.renderWidget = function (section_id, option_index, cfgvalue) {
+    const res = origRenderWidget.apply(this, [section_id, option_index, cfgvalue]);
+    const attachListener = (node) => {
+      if (!node) return node;
+      const textarea =
+        node && typeof node.querySelector === "function"
+          ? node.querySelector("textarea")
+          : node;
+      if (textarea && typeof textarea.addEventListener === "function") {
+        const syncToMain = () => {
+          const val = (textarea.value || "").trim();
+          const activeId = getActiveSubscriptionSectionId();
+          uci.set(UCI_PACKAGE, activeId, "section", TARGET_SECTION_NAME);
+          uci.set(UCI_PACKAGE, activeId, "url", val);
+          const statusEl = document.getElementById("nazzhub-sub-sync-status");
+          if (statusEl) {
+            if (val) {
+              statusEl.innerHTML = `✅ <span style="color: #28a745; font-weight: bold;">Привязано к секции Main:</span> <span style="font-family: monospace; font-size: 0.9em; word-break: break-all;">${val.length > 70 ? val.substring(0, 70) + "..." : val}</span>`;
+            } else {
+              statusEl.innerHTML = `⚠️ <span style="color: #dc3545;">Поле пустое. Вставьте ссылку на подписку.</span>`;
+            }
           }
-        }
-      };
-      textarea.addEventListener("input", syncToMain);
-      textarea.addEventListener("paste", () => {
-        setTimeout(syncToMain, 30);
-      });
+        };
+        textarea.addEventListener("input", syncToMain);
+        textarea.addEventListener("paste", () => {
+          setTimeout(syncToMain, 50);
+        });
+      }
+      return node;
+    };
+
+    if (res instanceof Promise) {
+      return res.then(attachListener);
     }
-    return node;
+    return attachListener(res);
   };
 
   // 3. Status indicator & Section Main Target note
