@@ -5,7 +5,7 @@ let uci_core = require("core.uci");
 let connections = require("config.connections");
 let subscription_share_link = require("subscription.share_link");
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("FORKOP_CONFIG_NAME") || "nazzhub";
 const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
 const TMP_SING_BOX_FOLDER = getenv("TMP_SING_BOX_FOLDER") || "/tmp/sing-box";
 const TMP_RULESET_FOLDER = getenv("TMP_RULESET_FOLDER") || TMP_SING_BOX_FOLDER + "/rulesets";

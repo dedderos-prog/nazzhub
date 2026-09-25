@@ -7,7 +7,8 @@ EXTRA_COMMANDS="retry_start_on_wan_up handle_wan_up"
 EXTRA_HELP="        retry_start_on_wan_up Retry failed cold start after WAN comes up\n        handle_wan_up Reload or retry after monitored WAN comes up\n"
 
 script=$(readlink "$initscript")
-NAME="$(basename ${script:-$initscript})"
+NAME="$(basename "${script:-$initscript}")"
+NAME="${NAME:-nazzhub}"
 NAZZHUB_LIB="/usr/lib/nazzhub"
 NAZZHUB_INITD_UC="$NAZZHUB_LIB/service/initd.uc"
 
@@ -15,8 +16,10 @@ initd_ucode() {
     [ -r "$NAZZHUB_INITD_UC" ] || return 1
     NAZZHUB_LIB="$NAZZHUB_LIB" \
         NAZZHUB_SERVICE_NAME="$NAME" \
+        NAZZHUB_CONFIG_NAME="$NAME" \
         FORKOP_LIB="$NAZZHUB_LIB" \
         FORKOP_SERVICE_NAME="$NAME" \
+        FORKOP_CONFIG_NAME="$NAME" \
         ucode -L "$NAZZHUB_LIB" "$NAZZHUB_INITD_UC" "$@"
 }
 

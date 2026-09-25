@@ -207,7 +207,20 @@ function run_spec(command, spec, user_args) {
         return 1;
     }
 
-    let args = [ "ucode", "-L", LIB_DIR, module, spec[1] ];
+    let args = [
+        "env",
+        "NAZZHUB_CONFIG_NAME=" + CONFIG_NAME,
+        "FORKOP_CONFIG_NAME=" + CONFIG_NAME,
+        "NAZZHUB_LIB=" + LIB_DIR,
+        "FORKOP_LIB=" + LIB_DIR,
+        "NAZZHUB_SERVICE_NAME=" + CONFIG_NAME,
+        "FORKOP_SERVICE_NAME=" + CONFIG_NAME,
+        "ucode",
+        "-L",
+        LIB_DIR,
+        module,
+        spec[1]
+    ];
     let count = int(spec[2] || 0);
     for (let i = 0; i < count; i++)
         push(args, user_args[i] || "");

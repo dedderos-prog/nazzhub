@@ -46,7 +46,7 @@ let url_userinfo = runtime_url.userinfo;
 let url_path = runtime_url.path;
 let url_query_params = runtime_url.query_params;
 
-const CONFIG_NAME = "forkop";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("FORKOP_CONFIG_NAME") || "nazzhub";
 
 function parent_dir(path) {
     path = as_string(path);
@@ -338,8 +338,7 @@ function ensure_custom_ruleset(config, reference) {
                 url: runtime_rulesets.community_url(reference)
             };
             let detour = download_detour_tag(runtime_settings());
-            if (detour != "")
-                rule_set.download_detour = detour;
+            rule_set.download_detour = detour != "" ? detour : runtime_constants.DIRECT_OUTBOUND_TAG;
             rule_set.update_interval = remote_ruleset_update_interval();
             push(config.route.rule_set, rule_set);
         }
@@ -371,8 +370,7 @@ function ensure_custom_ruleset(config, reference) {
             url: reference
         };
         let detour = download_detour_tag(runtime_settings());
-        if (detour != "")
-            rule_set.download_detour = detour;
+        rule_set.download_detour = detour != "" ? detour : runtime_constants.DIRECT_OUTBOUND_TAG;
         rule_set.update_interval = remote_ruleset_update_interval();
         push(config.route.rule_set, rule_set);
     }
@@ -479,8 +477,16 @@ function base_config(settings, service_address, runtime_context) {
         endpoints: [],
         inbounds,
         outbounds: [
-            { type: "direct", tag: runtime_constants.DIRECT_OUTBOUND_TAG },
-            { type: "direct", tag: runtime_constants.BYPASS_OUTBOUND_TAG }
+            {
+                type: "direct",
+                tag: runtime_constants.DIRECT_OUTBOUND_TAG,
+                routing_mark: runtime_constants.OUTBOUND_MARK
+            },
+            {
+                type: "direct",
+                tag: runtime_constants.BYPASS_OUTBOUND_TAG,
+                routing_mark: runtime_constants.OUTBOUND_MARK
+            }
         ],
         route: runtime_route.config(settings, runtime_context),
         services: [],

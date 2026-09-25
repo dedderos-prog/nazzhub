@@ -3,11 +3,11 @@
 let fs = require("fs");
 let uci_core = require("core.uci");
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
-const BIN_PATH = getenv("FORKOP_BIN") || "/usr/bin/nazzhub";
-const SERVICE_INIT = getenv("FORKOP_SERVICE_INIT") || "/etc/init.d/nazzhub";
-const SERVICE_NAME = getenv("FORKOP_SERVICE_NAME") || "forkop";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("FORKOP_CONFIG_NAME") || "nazzhub";
+const LIB_DIR = getenv("NAZZHUB_LIB") || getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
+const BIN_PATH = getenv("NAZZHUB_BIN") || getenv("FORKOP_BIN") || "/usr/bin/nazzhub";
+const SERVICE_INIT = getenv("NAZZHUB_SERVICE_INIT") || getenv("FORKOP_SERVICE_INIT") || "/etc/init.d/nazzhub";
+const SERVICE_NAME = getenv("NAZZHUB_SERVICE_NAME") || getenv("FORKOP_SERVICE_NAME") || "nazzhub";
 const STATE_UC = LIB_DIR + "/service/state.uc";
 const UI_UC = LIB_DIR + "/service/ui.uc";
 const STATE_DIR = getenv("FORKOP_UI_STATE_DIR") || "/var/run/nazzhub/ui-state";

@@ -186,12 +186,14 @@ function dnsmasq_configure_default_instance() {
     if (!default_has_NAZZHUB_dns) {
         backup_dnsmasq_config_option("noresolv", "NAZZHUB_noresolv");
         backup_dnsmasq_config_option("cachesize", "NAZZHUB_cachesize");
+        backup_dnsmasq_config_option("rebind_protection", "NAZZHUB_rebind_protection");
     }
 
     uci_delete("dhcp.@dnsmasq[0].server");
     uci_add_list("dhcp.@dnsmasq[0].server", SB_DNS_INBOUND_ADDRESS);
     uci_set("dhcp.@dnsmasq[0].noresolv", "1");
     uci_set("dhcp.@dnsmasq[0].cachesize", "0");
+    uci_set("dhcp.@dnsmasq[0].rebind_protection", "0");
 }
 
 function dnsmasq_restore_default_instance() {
@@ -224,6 +226,12 @@ function dnsmasq_restore_default_instance() {
         restore_dnsmasq_config_option("cachesize", "NAZZHUB_cachesize", "");
     else if (managed_global_dns)
         uci_set("dhcp.@dnsmasq[0].cachesize", "150");
+
+    let rebind_prot = uci_get("dhcp.@dnsmasq[0].NAZZHUB_rebind_protection");
+    if (rebind_prot != "")
+        restore_dnsmasq_config_option("rebind_protection", "NAZZHUB_rebind_protection", "1");
+    else if (managed_global_dns)
+        uci_set("dhcp.@dnsmasq[0].rebind_protection", "1");
 }
 
 function dnsmasq_configure(force) {
