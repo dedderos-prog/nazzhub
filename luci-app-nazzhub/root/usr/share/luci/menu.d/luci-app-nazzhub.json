@@ -1,0 +1,14 @@
+{
+  "admin/services/nazzhub": {
+    "title": "NAZZHUB",
+    "order": 42,
+    "action": {
+      "type": "view",
+      "path": "nazzhub/nazzhub"
+    },
+    "depends": {
+      "acl": [ "luci-app-nazzhub" ],
+      "uci": { "nazzhub": true }
+    }
+  }
+}

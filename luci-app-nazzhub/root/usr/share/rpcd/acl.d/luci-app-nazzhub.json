@@ -1,0 +1,61 @@
+{
+  "luci-app-nazzhub": {
+    "description": "Grant UCI and RPC access to LuCI app NAZZHUB",
+    "read": {
+      "file": {
+        "/etc/init.d/nazzhub": [
+          "exec"
+        ],
+        "/var/run/nazzhub/section-cache/*": [
+          "read"
+        ],
+        "/var/run/nazzhub/component-actions/*": [
+          "read"
+        ],
+        "/var/run/nazzhub/ui-state/*": [
+          "read"
+        ],
+        "/var/run/nazzhub/ui-state/service-actions/*": [
+          "read"
+        ],
+        "/var/run/nazzhub/ui-state/latency-actions/*": [
+          "read"
+        ],
+        "/usr/bin/nazzhub": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "luci-rpc": [
+          "getDHCPLeases",
+          "getHostHints"
+        ],
+        "network.interface": [
+          "dump"
+        ],
+        "service": [
+          "list"
+        ]
+      },
+      "uci": [
+        "nazzhub"
+      ]
+    },
+    "write": {
+      "file": {
+        "/var/run/nazzhub/ui-state/*": [
+          "write"
+        ],
+        "/var/run/nazzhub/ui-state/service-actions/*": [
+          "write"
+        ],
+        "/var/run/nazzhub/ui-state/latency-actions/*": [
+          "write"
+        ]
+      },
+      "uci": [
+        "nazzhub"
+      ]
+    }
+  }
+}
