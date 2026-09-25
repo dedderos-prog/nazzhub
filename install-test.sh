@@ -126,9 +126,25 @@ else
 fi
 
 msg "📂 Распаковка архива..."
-tar -xzf "$ARCHIVE_FILE" -C "$TMP_DIR"
-EXTRACTED_DIR="$(find "$TMP_DIR" -maxdepth 1 -type d -name "${REPO_NAME}-*" | head -n 1)"
-[ -d "$EXTRACTED_DIR" ] || fail "Не удалось найти распакованную директорию репозитория"
+mkdir -p "$TMP_DIR/src"
+tar -xzf "$ARCHIVE_FILE" -C "$TMP_DIR/src"
+
+EXTRACTED_DIR=""
+for d in "$TMP_DIR/src"/*; do
+    if [ -d "$d" ] && [ -d "$d/nazzhub" ]; then
+        EXTRACTED_DIR="$d"
+        break
+    fi
+done
+
+if [ -z "$EXTRACTED_DIR" ]; then
+    if [ -d "$TMP_DIR/src/nazzhub" ]; then
+        EXTRACTED_DIR="$TMP_DIR/src"
+    else
+        fail "Не удалось найти распакованную директорию с файлами nazzhub"
+    fi
+fi
+msg "   ✓ Файлы успешно распакованы"
 
 # 8. Stop old/conflicting services if running
 if [ -x /etc/init.d/nazzhub ]; then
@@ -164,7 +180,7 @@ cp "$EXTRACTED_DIR/nazzhub/files/usr/bin/nazzhub" /usr/bin/nazzhub
 chmod 0755 /usr/bin/nazzhub
 
 # Modules
-cp -r "$EXTRACTED_DIR/nazzhub/files/usr/lib/." /usr/lib/nazzhub/
+cp -r "$EXTRACTED_DIR/nazzhub/files/usr/lib/"* /usr/lib/nazzhub/
 # Version replacement
 sed -i 's/__COMPILED_VERSION_VARIABLE__/1.0.0-test/g' /usr/lib/nazzhub/core/constants.uc 2>/dev/null || true
 
@@ -176,7 +192,7 @@ mkdir -p /usr/share/luci/menu.d
 mkdir -p /usr/share/rpcd/acl.d
 mkdir -p /etc/uci-defaults
 
-cp -r "$EXTRACTED_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/." /www/luci-static/resources/view/nazzhub/
+cp -r "$EXTRACTED_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/"* /www/luci-static/resources/view/nazzhub/
 sed -i 's/__COMPILED_VERSION_VARIABLE__/1.0.0-test/g' /www/luci-static/resources/view/nazzhub/main.js 2>/dev/null || true
 
 cp "$EXTRACTED_DIR/luci-app-nazzhub/root/usr/share/luci/menu.d/luci-app-nazzhub.json" /usr/share/luci/menu.d/luci-app-nazzhub.json
