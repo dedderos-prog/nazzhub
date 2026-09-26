@@ -137,17 +137,17 @@ runtime_env() {
   TMP_SING_BOX_FOLDER="$WORK_DIR/runtime/tmp-sing-box" \
     TMP_RULESET_FOLDER="$WORK_DIR/runtime/tmp-sing-box/rulesets" \
     TMP_SUBSCRIPTION_FOLDER="$WORK_DIR/runtime/tmp-sing-box/subscriptions" \
-    FORKOP_RUNTIME_STATE_DIR="$WORK_DIR/runtime/run" \
-    FORKOP_SUBSCRIPTION_UPDATE_STATE_DIR="$WORK_DIR/runtime/run/subscription-update" \
-    FORKOP_SUBSCRIPTION_LINKS_DIR="$WORK_DIR/runtime/run/subscription-links" \
-    FORKOP_SUBSCRIPTION_METADATA_DIR="$WORK_DIR/runtime/run/subscription-metadata" \
-    FORKOP_OUTBOUND_METADATA_DIR="$WORK_DIR/runtime/run/outbound-metadata" \
-    FORKOP_SECTION_CACHE_DIR="$WORK_DIR/runtime/run/section-cache" \
-    FORKOP_RUNTIME_CACHE_FORMAT_FILE="$WORK_DIR/runtime/run/cache-format" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/runtime/persistent" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE="$WORK_DIR/runtime/persistent/cache-format" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT="7" \
-    FORKOP_SUBSCRIPTION_BOOTSTRAP_RETRY_PID_FILE="$WORK_DIR/runtime/run/bootstrap.pid" \
+    NAZZHUB_RUNTIME_STATE_DIR="$WORK_DIR/runtime/run" \
+    NAZZHUB_SUBSCRIPTION_UPDATE_STATE_DIR="$WORK_DIR/runtime/run/subscription-update" \
+    NAZZHUB_SUBSCRIPTION_LINKS_DIR="$WORK_DIR/runtime/run/subscription-links" \
+    NAZZHUB_SUBSCRIPTION_METADATA_DIR="$WORK_DIR/runtime/run/subscription-metadata" \
+    NAZZHUB_OUTBOUND_METADATA_DIR="$WORK_DIR/runtime/run/outbound-metadata" \
+    NAZZHUB_SECTION_CACHE_DIR="$WORK_DIR/runtime/run/section-cache" \
+    NAZZHUB_RUNTIME_CACHE_FORMAT_FILE="$WORK_DIR/runtime/run/cache-format" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/runtime/persistent" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE="$WORK_DIR/runtime/persistent/cache-format" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT="7" \
+    NAZZHUB_SUBSCRIPTION_BOOTSTRAP_RETRY_PID_FILE="$WORK_DIR/runtime/run/bootstrap.pid" \
     "$@"
 }
 

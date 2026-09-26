@@ -17,7 +17,7 @@ fail() {
 }
 
 lifecycle_ucode() {
-  FORKOP_RUNTIME_STATE_DIR="$WORK_DIR/run" \
+  NAZZHUB_RUNTIME_STATE_DIR="$WORK_DIR/run" \
     ucode -L "$NAZZHUB_LIB" "$LIFECYCLE_UC" "$@"
 }
 

@@ -19,20 +19,20 @@ fail() {
 [ ! -e "$NAZZHUB_LIB/service/cli.uc" ] ||
   fail "service/cli.uc must be removed after /usr/bin ucode entrypoint takeover"
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 if grep -Fq '#!/bin/sh' "$NAZZHUB_BIN" ||
   grep -Fq '#!/bin/ash' "$NAZZHUB_BIN" ||
   grep -Fq 'exec ucode' "$NAZZHUB_BIN"; then
-  fail "forkop entrypoint must not keep a shell loader"
+  fail "nazzhub entrypoint must not keep a shell loader"
 fi
-if grep -Fq 'FORKOP_COMMAND' "$NAZZHUB_BIN" ||
+if grep -Fq 'NAZZHUB_COMMAND' "$NAZZHUB_BIN" ||
   grep -Fq 'run_module()' "$NAZZHUB_BIN"; then
-  fail "forkop entrypoint must not keep legacy shell routing symbols"
+  fail "nazzhub entrypoint must not keep legacy shell routing symbols"
 fi
 grep -Fq 'function command_spec(command)' "$NAZZHUB_BIN" ||
-  fail "forkop ucode entrypoint must own command routing"
+  fail "nazzhub ucode entrypoint must own command routing"
 grep -Fq 'function show_help()' "$NAZZHUB_BIN" ||
-  fail "forkop ucode entrypoint must own help text"
+  fail "nazzhub ucode entrypoint must own help text"
 
 fake_lib="$WORK_DIR/lib"
 mkdir -p "$fake_lib/service" "$fake_lib/diagnostics" "$fake_lib/components" "$fake_lib/dns"
@@ -55,7 +55,7 @@ UCODE
 cat >"$fake_lib/dns/apply.uc" <<'UCODE'
 #!/usr/bin/env ucode
 let fs = require("fs");
-let marker = getenv("FORKOP_TEST_DNS_RESTORE_MARKER");
+let marker = getenv("NAZZHUB_TEST_DNS_RESTORE_MARKER");
 if (marker != null && marker != "")
     fs.writefile(marker, ARGV[0] || "");
 UCODE
@@ -82,7 +82,7 @@ component_updates_out="$(NAZZHUB_LIB="$fake_lib" ucode "$NAZZHUB_BIN" component_
 
 rm -f "$fake_lib/service/lifecycle.uc"
 set +e
-FORKOP_TEST_DNS_RESTORE_MARKER="$WORK_DIR/dns-restore.marker" NAZZHUB_LIB="$fake_lib" \
+NAZZHUB_TEST_DNS_RESTORE_MARKER="$WORK_DIR/dns-restore.marker" NAZZHUB_LIB="$fake_lib" \
   ucode "$NAZZHUB_BIN" start >/dev/null 2>"$WORK_DIR/missing.err"
 status="$?"
 set -e

@@ -59,18 +59,18 @@ export function shouldResetDiagnosticsChecks({
 export function shouldDisableDiagnosticRunAction({
   providerInfoLoaded,
   servicesInfoLoading,
-  forkopRunning,
+  nazzhubRunning,
   mutatingServiceActionLoading,
 }: {
   providerInfoLoaded: boolean;
   servicesInfoLoading: boolean;
-  forkopRunning: boolean;
+  nazzhubRunning: boolean;
   mutatingServiceActionLoading: boolean;
 }) {
   return (
     !providerInfoLoaded ||
     servicesInfoLoading ||
-    !forkopRunning ||
+    !nazzhubRunning ||
     mutatingServiceActionLoading
   );
 }
@@ -100,43 +100,43 @@ export function getAvailableActionsDisabledState({
 }
 
 export function shouldShowRestartAction({
-  forkopRunning,
+  nazzhubRunning,
   restartLoading,
   startLoading,
   stopLoading,
 }: {
-  forkopRunning: boolean;
+  nazzhubRunning: boolean;
   restartLoading: boolean;
   startLoading: boolean;
   stopLoading: boolean;
 }) {
-  return restartLoading || (forkopRunning && !startLoading && !stopLoading);
+  return restartLoading || (nazzhubRunning && !startLoading && !stopLoading);
 }
 
 export function shouldShowStartAction({
-  forkopRunning,
+  nazzhubRunning,
   restartLoading,
   startLoading,
   stopLoading,
 }: {
-  forkopRunning: boolean;
+  nazzhubRunning: boolean;
   restartLoading: boolean;
   startLoading: boolean;
   stopLoading: boolean;
 }) {
-  return startLoading || (!restartLoading && !forkopRunning && !stopLoading);
+  return startLoading || (!restartLoading && !nazzhubRunning && !stopLoading);
 }
 
 export function shouldShowStopAction({
-  forkopRunning,
+  nazzhubRunning,
   restartLoading,
   startLoading,
   stopLoading,
 }: {
-  forkopRunning: boolean;
+  nazzhubRunning: boolean;
   restartLoading: boolean;
   startLoading: boolean;
   stopLoading: boolean;
 }) {
-  return stopLoading || restartLoading || (forkopRunning && !startLoading);
+  return stopLoading || restartLoading || (nazzhubRunning && !startLoading);
 }

@@ -1,5 +1,5 @@
 import { executeShellCommand } from '../../../helpers';
-import { Forkop } from '../../types';
+import { Nazzhub } from '../../types';
 
 interface CallBaseMethodOptions {
   allowNonZeroWithStdout?: boolean;
@@ -7,11 +7,11 @@ interface CallBaseMethodOptions {
 }
 
 export async function callBaseMethod<T>(
-  method: Forkop.AvailableMethods,
+  method: Nazzhub.AvailableMethods,
   args: string[] = [],
   command: string = '/usr/bin/nazzhub',
   options: CallBaseMethodOptions = {},
-): Promise<Forkop.MethodResponse<T>> {
+): Promise<Nazzhub.MethodResponse<T>> {
   try {
     const response = await executeShellCommand({
       command,

@@ -22,7 +22,7 @@ fail() {
   fail "constants.sh shell owner must be removed"
 
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch lifecycle orchestration through service/lifecycle.uc"
 grep -Fq 'core.constants' "$LIFECYCLE_UC" ||
@@ -37,7 +37,7 @@ if grep -n 'constants\.sh' "$NAZZHUB_MAKEFILE" "$BUILD_SCRIPT" >/dev/null 2>&1; 
   fail "package build must not patch removed constants.sh"
 fi
 grep -Fq 'core/constants.uc' "$NAZZHUB_MAKEFILE" ||
-  fail "forkop/Makefile must patch core/constants.uc"
+  fail "nazzhub/Makefile must patch core/constants.uc"
 grep -Fq 'core/constants.uc' "$BUILD_SCRIPT" ||
   fail "release build must patch core/constants.uc"
 

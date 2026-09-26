@@ -117,21 +117,21 @@ run_update() {
   : >"$log"
   env \
     NAZZHUB_LIB="$FAKE_LIB" \
-    FORKOP_RUNTIME_STATE_DIR="$WORK_DIR/run" \
-    FORKOP_SUBSCRIPTION_UPDATE_LOCK_DIR="$WORK_DIR/run/subscription-update.lock" \
-    FORKOP_RELOAD_LOCK_DIR="$WORK_DIR/run/reload.lock" \
-    FORKOP_SUBSCRIPTION_UPDATE_STATE_DIR="$WORK_DIR/run/subscription-update" \
-    FORKOP_SUBSCRIPTION_UPDATE_JOB_DIR="$WORK_DIR/run/subscription-update-jobs" \
-    FORKOP_SUBSCRIPTION_LINKS_DIR="$WORK_DIR/run/subscription-links" \
-    FORKOP_SUBSCRIPTION_METADATA_DIR="$WORK_DIR/run/subscription-metadata" \
-    FORKOP_OUTBOUND_METADATA_DIR="$WORK_DIR/run/outbound-metadata" \
-    FORKOP_SECTION_CACHE_DIR="$WORK_DIR/run/section-cache" \
-    FORKOP_RUNTIME_CACHE_FORMAT_FILE="$WORK_DIR/run/cache-format" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/persistent/subscription-cache" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE="$WORK_DIR/persistent/subscription-cache/cache-format" \
-    FORKOP_PENDING_RELOAD_FILE="$WORK_DIR/run/reload.pending" \
-    FORKOP_RELOAD_STATE_FILE="$WORK_DIR/run/reload-state" \
-    FORKOP_RULE_CONDITION_CACHE_DIR="$WORK_DIR/run/rule-condition-cache" \
+    NAZZHUB_RUNTIME_STATE_DIR="$WORK_DIR/run" \
+    NAZZHUB_SUBSCRIPTION_UPDATE_LOCK_DIR="$WORK_DIR/run/subscription-update.lock" \
+    NAZZHUB_RELOAD_LOCK_DIR="$WORK_DIR/run/reload.lock" \
+    NAZZHUB_SUBSCRIPTION_UPDATE_STATE_DIR="$WORK_DIR/run/subscription-update" \
+    NAZZHUB_SUBSCRIPTION_UPDATE_JOB_DIR="$WORK_DIR/run/subscription-update-jobs" \
+    NAZZHUB_SUBSCRIPTION_LINKS_DIR="$WORK_DIR/run/subscription-links" \
+    NAZZHUB_SUBSCRIPTION_METADATA_DIR="$WORK_DIR/run/subscription-metadata" \
+    NAZZHUB_OUTBOUND_METADATA_DIR="$WORK_DIR/run/outbound-metadata" \
+    NAZZHUB_SECTION_CACHE_DIR="$WORK_DIR/run/section-cache" \
+    NAZZHUB_RUNTIME_CACHE_FORMAT_FILE="$WORK_DIR/run/cache-format" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/persistent/subscription-cache" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE="$WORK_DIR/persistent/subscription-cache/cache-format" \
+    NAZZHUB_PENDING_RELOAD_FILE="$WORK_DIR/run/reload.pending" \
+    NAZZHUB_RELOAD_STATE_FILE="$WORK_DIR/run/reload-state" \
+    NAZZHUB_RULE_CONDITION_CACHE_DIR="$WORK_DIR/run/rule-condition-cache" \
     FAKE_CALL_LOG="$log" \
     FAKE_SUBSCRIPTION_UPDATE_SUMMARY="$summary" \
     ucode -L "$REAL_LIB" "$UPDATES_UC" subscription-update-if-due

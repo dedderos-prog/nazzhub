@@ -22,7 +22,7 @@ generate() {
   local output="$2"
   local state="${3:-$WORK_DIR/missing-state.json}"
   NAZZHUB_LIB="$NAZZHUB_LIB" \
-    FORKOP_DNS_FAILOVER_STATE_FILE="$state" \
+    NAZZHUB_DNS_FAILOVER_STATE_FILE="$state" \
     ucode -L "$NAZZHUB_LIB" "$GENERATOR" generate-config-fixture "$fixture" "$output" 192.168.1.1 0
 }
 

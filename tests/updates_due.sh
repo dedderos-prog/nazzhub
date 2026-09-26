@@ -251,7 +251,7 @@ node - "$WORK_DIR/cron-apply-invalid.json" <<'JS'
 const fs = require("fs");
 const value = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
 if (value.crontab !== "0 1 * * * /bin/true # keep\n") {
-  console.error("invalid plan should remove old forkop cron jobs only", JSON.stringify(value.crontab));
+  console.error("invalid plan should remove old nazzhub cron jobs only", JSON.stringify(value.crontab));
   process.exit(1);
 }
 if (!value.logs.some(item => item.level === "error" && item.message === "Invalid update_interval value: bad")) {

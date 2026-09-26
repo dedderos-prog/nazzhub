@@ -9,12 +9,12 @@ let write_json = common.write_json;
 let array_or_empty = common.array_or_empty;
 let object_or_empty = common.object_or_empty;
 
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
-const RUNTIME_STATE_DIR = getenv("FORKOP_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
-const SECTION_CACHE_DIR = getenv("FORKOP_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
-const PRIORITY_PID_FILE = getenv("FORKOP_PRIORITY_PID_FILE") || RUNTIME_STATE_DIR + "/priority.pid";
-const PRIORITY_UC = getenv("FORKOP_PRIORITY_UC") || LIB_DIR + "/singbox/priority.uc";
-const DIAGNOSTICS_UC = getenv("FORKOP_DIAGNOSTICS_UC") || LIB_DIR + "/diagnostics/runtime.uc";
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
+const RUNTIME_STATE_DIR = getenv("NAZZHUB_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
+const SECTION_CACHE_DIR = getenv("NAZZHUB_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
+const PRIORITY_PID_FILE = getenv("NAZZHUB_PRIORITY_PID_FILE") || RUNTIME_STATE_DIR + "/priority.pid";
+const PRIORITY_UC = getenv("NAZZHUB_PRIORITY_UC") || LIB_DIR + "/singbox/priority.uc";
+const DIAGNOSTICS_UC = getenv("NAZZHUB_DIAGNOSTICS_UC") || LIB_DIR + "/diagnostics/runtime.uc";
 
 function shell_quote(value) {
     return "'" + replace(as_string(value), /'/g, "'\\''") + "'";
@@ -74,7 +74,7 @@ function file_first_line(path) {
 
 function log_message(message, level) {
     level = as_string(level || "info");
-    command_success_from_args([ "logger", "-t", "forkop", "[" + level + "] priority: " + as_string(message) ]);
+    command_success_from_args([ "logger", "-t", "nazzhub", "[" + level + "] priority: " + as_string(message) ]);
 }
 
 function now_seconds() {

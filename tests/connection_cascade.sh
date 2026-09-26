@@ -49,7 +49,7 @@ cat >"$WORK_DIR/subscriptions/source-subscription-1.json" <<'JSON'
       "outbounds": [ "nested-entry", "independent" ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
-      "__forkop_allow_group": true
+      "__nazzhub_allow_group": true
     }
   ]
 }

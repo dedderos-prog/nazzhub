@@ -356,8 +356,8 @@ let value = json(fs.readfile(ARGV[0]));
 let flags = {};
 for (let outbound in value.outbounds || [])
     flags[outbound.tag] = {
-        allow: outbound.__forkop_allow_group === true,
-        hidden: outbound.__forkop_hidden === true
+        allow: outbound.__nazzhub_allow_group === true,
+        hidden: outbound.__nazzhub_hidden === true
     };
 if (!flags["Native Group"].allow)
     die("native sing-box URLTest group was not allowed\n");

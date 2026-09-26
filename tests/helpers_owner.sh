@@ -35,7 +35,7 @@ if grep -R -n -E 'helpers_ucode\(|get_(inbound|server_inbound|tailscale_dns_serv
 fi
 
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch lifecycle through service/lifecycle.uc"
 grep -Fq 'core/packages.uc' "$LIFECYCLE_UC" ||
@@ -46,14 +46,14 @@ for shell_owner_pattern in \
   'uci_set'
 do
   if grep -Fq "$shell_owner_pattern" "$NAZZHUB_BIN"; then
-    fail "forkop shell entrypoint must not own $shell_owner_pattern logic"
+    fail "nazzhub shell entrypoint must not own $shell_owner_pattern logic"
   fi
 done
 if grep -E -n '(^|[;&|[:space:]])nft[[:space:]]+(list|add|delete|flush)' "$NAZZHUB_BIN" >/dev/null 2>&1; then
-  fail "forkop shell entrypoint must not own nft command logic"
+  fail "nazzhub shell entrypoint must not own nft command logic"
 fi
 if grep -E -n '(^|[;&|[:space:]])ip[[:space:]]+(rule|route)' "$NAZZHUB_BIN" >/dev/null 2>&1; then
-  fail "forkop shell entrypoint must not own ip rule/route logic"
+  fail "nazzhub shell entrypoint must not own ip rule/route logic"
 fi
 [ ! -e "$NAZZHUB_LIB/updater.sh" ] ||
   fail "updater.sh shell owner must be removed"
@@ -90,7 +90,7 @@ if grep -R -n -E 'get_sing_box_version\(|sing_box_version_from_output\(|sing_box
   fail "sing-box helper/state shell symbols must not remain"
 fi
 
-if ucode -L "$NAZZHUB_LIB" "$PACKAGES_UC" installed forkop-definitely-missing >/dev/null 2>&1; then
+if ucode -L "$NAZZHUB_LIB" "$PACKAGES_UC" installed nazzhub-definitely-missing >/dev/null 2>&1; then
   fail "missing package must not be reported installed"
 fi
 

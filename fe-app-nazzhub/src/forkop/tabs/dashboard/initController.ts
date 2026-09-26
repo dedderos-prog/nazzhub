@@ -8,7 +8,7 @@ import { copyToClipboard } from '../../../helpers/copyToClipboard';
 import { showToast } from '../../../helpers/showToast';
 import { prettyBytes } from '../../../helpers/prettyBytes';
 import { renderCopyIcon24 } from '../../../icons';
-import { CustomForkopMethods, ForkopShellMethods } from '../../methods';
+import { CustomNazzhubMethods, NazzhubShellMethods } from '../../methods';
 import {
   logger,
   markUiActionOwned,
@@ -27,7 +27,7 @@ import {
 } from './partials';
 import { fetchServicesInfo } from '../../fetchers/fetchServicesInfo';
 import { getClashApiSecret } from '../../methods/custom/getClashApiSecret';
-import { Forkop } from '../../types';
+import { Nazzhub } from '../../types';
 import {
   getCachedRuntimeUiState,
   refreshRuntimeUiState,
@@ -84,7 +84,7 @@ async function fetchDashboardSectionsOnce(mountId: number) {
   });
 
   try {
-    const { data, success } = await CustomForkopMethods.getDashboardSections();
+    const { data, success } = await CustomNazzhubMethods.getDashboardSections();
 
     if (
       !dashboardMounted ||
@@ -224,7 +224,7 @@ function setLatencyFetching(
   sectionName: string,
   fetching: boolean,
   local = false,
-  progress?: Forkop.LatencyActionProgress,
+  progress?: Nazzhub.LatencyActionProgress,
 ) {
   if (local || !fetching) {
     setLocalLatencyAction(sectionName, fetching && local);
@@ -260,7 +260,7 @@ function setLatencyFetching(
 async function completeSubscriptionUpdateJob(
   jobId: string,
   sectionName: string,
-  response: Forkop.MethodResponse<Forkop.SubscriptionUpdateJobState>,
+  response: Nazzhub.MethodResponse<Nazzhub.SubscriptionUpdateJobState>,
 ) {
   if (pageUnloading) {
     setSubscriptionUpdating(sectionName, false);
@@ -292,7 +292,7 @@ async function completeSubscriptionUpdateJob(
   setSubscriptionUpdating(sectionName, false);
 
   if (jobId && response.success) {
-    void ForkopShellMethods.uiActionAck('subscription', jobId);
+    void NazzhubShellMethods.uiActionAck('subscription', jobId);
   }
 
   if (failed) {
@@ -310,7 +310,7 @@ async function completeSubscriptionUpdateJob(
 }
 
 async function followSubscriptionUpdateState(
-  state: Forkop.SubscriptionUpdateJobState,
+  state: Nazzhub.SubscriptionUpdateJobState,
 ) {
   const jobId = state.job_id;
   const sectionName = state.section || '';
@@ -330,11 +330,11 @@ async function followSubscriptionUpdateState(
 
   try {
     const response = state.running
-      ? await ForkopShellMethods.waitSubscriptionUpdateJob(jobId)
+      ? await NazzhubShellMethods.waitSubscriptionUpdateJob(jobId)
       : ({
           success: true,
           data: state,
-        } as Forkop.MethodSuccessResponse<Forkop.SubscriptionUpdateJobState>);
+        } as Nazzhub.MethodSuccessResponse<Nazzhub.SubscriptionUpdateJobState>);
 
     await completeSubscriptionUpdateJob(jobId, sectionName, response);
   } catch (error) {
@@ -371,13 +371,13 @@ async function completeLatencyTestJob(jobId: string, sectionName: string) {
   }
 
   if (jobId) {
-    void ForkopShellMethods.uiActionAck('latency', jobId);
+    void NazzhubShellMethods.uiActionAck('latency', jobId);
   }
 
   void fetchDashboardSections({ force: true });
 }
 
-async function followLatencyTestState(state: Forkop.LatencyActionState) {
+async function followLatencyTestState(state: Nazzhub.LatencyActionState) {
   const jobId = state.job_id;
   const sectionName = state.section || '';
 
@@ -396,7 +396,7 @@ async function followLatencyTestState(state: Forkop.LatencyActionState) {
 
   try {
     if (state.running) {
-      await ForkopShellMethods.waitLatencyTestJob(jobId);
+      await NazzhubShellMethods.waitLatencyTestJob(jobId);
     }
 
     await completeLatencyTestJob(jobId, sectionName);
@@ -410,13 +410,13 @@ async function followLatencyTestState(state: Forkop.LatencyActionState) {
   }
 }
 
-function followDashboardActionsFromUiState(uiState: Forkop.UiState) {
+function followDashboardActionsFromUiState(uiState: Nazzhub.UiState) {
   for (const state of uiState.actions.subscription || []) {
     if (state.running || (state.job_id && state.section)) {
       void followSubscriptionUpdateState(state);
     } else if (state.job_id && !handledSubscriptionJobs.has(state.job_id)) {
       handledSubscriptionJobs.add(state.job_id);
-      void ForkopShellMethods.uiActionAck('subscription', state.job_id);
+      void NazzhubShellMethods.uiActionAck('subscription', state.job_id);
     }
   }
 
@@ -425,7 +425,7 @@ function followDashboardActionsFromUiState(uiState: Forkop.UiState) {
       void followLatencyTestState(state);
     } else if (state.job_id && !handledLatencyJobs.has(state.job_id)) {
       handledLatencyJobs.add(state.job_id);
-      void ForkopShellMethods.uiActionAck('latency', state.job_id);
+      void NazzhubShellMethods.uiActionAck('latency', state.job_id);
     }
   }
 }
@@ -576,7 +576,7 @@ function getDashboardServiceAvailability() {
   return getServiceAvailability({
     loading: service.loading,
     failed: service.failed,
-    running: service.data.forkopRunning,
+    running: service.data.nazzhubRunning,
   });
 }
 
@@ -651,7 +651,7 @@ async function handleChooseOutbound(
   setSelectorSwitching(sectionName, tag);
 
   try {
-    await ForkopShellMethods.setClashApiGroupProxy(selector, tag);
+    await NazzhubShellMethods.setClashApiGroupProxy(selector, tag);
     await fetchDashboardSections({ force: true });
   } finally {
     setSelectorSwitching(sectionName);
@@ -659,9 +659,9 @@ async function handleChooseOutbound(
 }
 
 function getInitialLatencyProgress(
-  latencyType: Forkop.LatencyActionState['latency_type'],
+  latencyType: Nazzhub.LatencyActionState['latency_type'],
   tag: string,
-): Forkop.LatencyActionProgress | undefined {
+): Nazzhub.LatencyActionProgress | undefined {
   if (latencyType !== 'proxy_list') {
     return undefined;
   }
@@ -683,7 +683,7 @@ function getInitialLatencyProgress(
 }
 
 async function handleTestLatency(
-  latencyType: Forkop.LatencyActionState['latency_type'],
+  latencyType: Nazzhub.LatencyActionState['latency_type'],
   sectionName: string,
   tag: string,
   timeout?: string,
@@ -703,7 +703,7 @@ async function handleTestLatency(
   let completed = false;
 
   try {
-    const startResponse = await ForkopShellMethods.latencyTestStart(
+    const startResponse = await NazzhubShellMethods.latencyTestStart(
       latencyType,
       sectionName,
       tag,
@@ -722,7 +722,7 @@ async function handleTestLatency(
 
     followedLatencyJobs.add(jobId);
     ownsJobFollow = true;
-    await ForkopShellMethods.waitLatencyTestJob(jobId);
+    await NazzhubShellMethods.waitLatencyTestJob(jobId);
     await completeLatencyTestJob(jobId, sectionName);
     completed = true;
   } catch (error) {
@@ -738,7 +738,7 @@ async function handleTestLatency(
   }
 }
 
-function handleCopyOutbound(outbound: Forkop.Outbound) {
+function handleCopyOutbound(outbound: Nazzhub.Outbound) {
   const link = outbound.link;
 
   if (link && isCopyableProxyLink(link)) {
@@ -809,7 +809,7 @@ function getDetectedCountryFlag(country?: string) {
   );
 }
 
-function renderDetailsMemberName(member: Forkop.UrlTestMember) {
+function renderDetailsMemberName(member: Nazzhub.UrlTestMember) {
   const countryFlag = getDetectedCountryFlag(member.country);
   if (!countryFlag) {
     return renderFlagEmojis(member.displayName);
@@ -825,7 +825,7 @@ function renderDetailsMemberName(member: Forkop.UrlTestMember) {
   ];
 }
 
-function renderUrlTestSelectedValue(info: Forkop.UrlTestInfo) {
+function renderUrlTestSelectedValue(info: Nazzhub.UrlTestInfo) {
   const selectedMember = info.outbounds.find((member) => member.selected);
   const selectedName =
     selectedMember?.displayName || info.selectedName || info.selectedCode || '';
@@ -883,7 +883,7 @@ function renderUrlTestCopyButton(
   );
 }
 
-function renderUrlTestInfoModal(outbound: Forkop.Outbound) {
+function renderUrlTestInfoModal(outbound: Nazzhub.Outbound) {
   const info = outbound.urlTestInfo;
 
   if (!info) {
@@ -1019,7 +1019,7 @@ function renderUrlTestInfoModal(outbound: Forkop.Outbound) {
   ]);
 }
 
-function handleShowUrlTestInfo(outbound: Forkop.Outbound) {
+function handleShowUrlTestInfo(outbound: Nazzhub.Outbound) {
   if (!outbound.urlTestInfo) {
     return;
   }
@@ -1032,7 +1032,7 @@ function handleShowUrlTestInfo(outbound: Forkop.Outbound) {
   );
 }
 
-function renderPrioritySelectedValue(info: Forkop.PriorityInfo) {
+function renderPrioritySelectedValue(info: Nazzhub.PriorityInfo) {
   const selectedMember = info.outbounds.find((member) => member.selected);
   const selectedName =
     selectedMember?.displayName || info.selectedName || info.selectedCode || '';
@@ -1082,7 +1082,7 @@ function renderPrioritySelectedValue(info: Forkop.PriorityInfo) {
   );
 }
 
-function renderPriorityMemberName(member: Forkop.PriorityMember) {
+function renderPriorityMemberName(member: Nazzhub.PriorityMember) {
   const levelName = member.levelName || _('Level');
 
   return [
@@ -1104,7 +1104,7 @@ function renderPriorityMemberName(member: Forkop.PriorityMember) {
   ];
 }
 
-function renderPriorityInfoModal(outbound: Forkop.Outbound) {
+function renderPriorityInfoModal(outbound: Nazzhub.Outbound) {
   const info = outbound.priorityInfo;
 
   if (!info) {
@@ -1269,7 +1269,7 @@ function renderPriorityInfoModal(outbound: Forkop.Outbound) {
   ]);
 }
 
-function handleShowPriorityInfo(outbound: Forkop.Outbound) {
+function handleShowPriorityInfo(outbound: Nazzhub.Outbound) {
   if (!outbound.priorityInfo) {
     return;
   }
@@ -1282,7 +1282,7 @@ function handleShowPriorityInfo(outbound: Forkop.Outbound) {
   );
 }
 
-async function handleUpdateSubscription(section: Forkop.OutboundGroup) {
+async function handleUpdateSubscription(section: Nazzhub.OutboundGroup) {
   if (
     store.get().sectionsWidget.subscriptionUpdatingSections[section.sectionName]
   ) {
@@ -1294,7 +1294,7 @@ async function handleUpdateSubscription(section: Forkop.OutboundGroup) {
   let ownsJobFollow = false;
 
   try {
-    const startResponse = await ForkopShellMethods.subscriptionUpdateStart(
+    const startResponse = await NazzhubShellMethods.subscriptionUpdateStart(
       section.sectionName,
     );
 
@@ -1310,7 +1310,7 @@ async function handleUpdateSubscription(section: Forkop.OutboundGroup) {
 
     followedSubscriptionJobs.add(jobId);
     ownsJobFollow = true;
-    const response = await ForkopShellMethods.waitSubscriptionUpdateJob(jobId);
+    const response = await NazzhubShellMethods.waitSubscriptionUpdateJob(jobId);
     await completeSubscriptionUpdateJob(jobId, section.sectionName, response);
   } catch (error) {
     logger.error('[DASHBOARD]', 'handleUpdateSubscription: failed', error);
@@ -1650,12 +1650,12 @@ async function renderServicesInfoWidget() {
     title: _('Services info'),
     items: [
       {
-        key: 'Forkop',
-        value: servicesInfoWidget.data.forkopRunning
+        key: 'Nazzhub',
+        value: servicesInfoWidget.data.nazzhubRunning
           ? _('✔ Running')
           : _('✘ Stopped'),
         attributes: {
-          class: servicesInfoWidget.data.forkopRunning
+          class: servicesInfoWidget.data.nazzhubRunning
             ? 'fkp_dashboard-page__widgets-section__item__row--success'
             : 'fkp_dashboard-page__widgets-section__item__row--error',
         },

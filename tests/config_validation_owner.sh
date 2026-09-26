@@ -2,14 +2,14 @@
 set -eo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FORKOP_FILES="$ROOT_DIR/nazzhub/files"
-NAZZHUB_BIN="$FORKOP_FILES/usr/bin/nazzhub"
-NAZZHUB_LIB="$FORKOP_FILES/usr/lib"
+NAZZHUB_FILES="$ROOT_DIR/nazzhub/files"
+NAZZHUB_BIN="$NAZZHUB_FILES/usr/bin/nazzhub"
+NAZZHUB_LIB="$NAZZHUB_FILES/usr/lib"
 CLI_UC="$NAZZHUB_BIN"
 VALIDATOR="$NAZZHUB_LIB/config/validator.uc"
 RULE_CONFIG="$NAZZHUB_LIB/config/rule.uc"
 GENERATOR="$NAZZHUB_LIB/singbox/generator.uc"
-SECTION_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/forkop/section.js"
+SECTION_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/section.js"
 LIFECYCLE="$NAZZHUB_LIB/service/lifecycle.uc"
 
 fail() {
@@ -20,7 +20,7 @@ fail() {
 [ ! -e "$NAZZHUB_LIB/config_validation.sh" ] ||
   fail "config_validation.sh shell owner must be removed"
 
-if grep -R -n "config_validation.sh" "$FORKOP_FILES" >/dev/null 2>&1; then
+if grep -R -n "config_validation.sh" "$NAZZHUB_FILES" >/dev/null 2>&1; then
   fail "runtime files must not reference config_validation.sh"
 fi
 
@@ -47,7 +47,7 @@ if grep -n -E 'require\("uci"\)\.cursor|uci -q|uci", "-q"|command_output\("uci' 
   fail "config validator must not own direct UCI cursor or CLI access"
 fi
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch service lifecycle through service/lifecycle.uc"
 if grep -n -E 'MIGRATION_UC|config[./]migration|"migrate"' "$LIFECYCLE" >/dev/null 2>&1; then

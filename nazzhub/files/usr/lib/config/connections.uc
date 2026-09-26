@@ -7,7 +7,7 @@ let rule_config = require("config.rule");
 let as_string = common.as_string;
 let object_or_empty = common.object_or_empty;
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
 const ITEM_TYPES = [
     "subscription_url",
     "section_interface",

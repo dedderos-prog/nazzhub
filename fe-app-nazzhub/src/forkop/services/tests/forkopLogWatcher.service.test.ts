@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ForkopLogWatcher } from '../forkopLogWatcher.service';
+import { NazzhubLogWatcher } from '../nazzhubLogWatcher.service';
 
-describe('ForkopLogWatcher', () => {
-  const watcher = ForkopLogWatcher.getInstance();
+describe('NazzhubLogWatcher', () => {
+  const watcher = NazzhubLogWatcher.getInstance();
   let rawLogs = '';
   let seenLines: string[] = [];
 

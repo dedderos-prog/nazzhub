@@ -79,7 +79,7 @@ if (value.running !== false || value.success !== false || value.section !== "pro
 NODE
 
 mkdir -p "$WORK_DIR/bin"
-cat >"$WORK_DIR/bin/forkop" <<'SH'
+cat >"$WORK_DIR/bin/nazzhub" <<'SH'
 #!/usr/bin/env sh
 if [ "$1" != "subscription_update" ]; then
   exit 64
@@ -87,24 +87,24 @@ fi
 printf 'fake update for %s/%s\n' "$2" "$3"
 printf 'Subscription update completed by fake worker\n'
 SH
-chmod +x "$WORK_DIR/bin/forkop"
+chmod +x "$WORK_DIR/bin/nazzhub"
 
 ASYNC_ENV=(
   "NAZZHUB_LIB=$ROOT_DIR/nazzhub/files/usr/lib"
-  "NAZZHUB_BIN=$WORK_DIR/bin/forkop"
+  "NAZZHUB_BIN=$WORK_DIR/bin/nazzhub"
   "TMP_SING_BOX_FOLDER=$WORK_DIR/tmp/sing-box"
   "TMP_RULESET_FOLDER=$WORK_DIR/tmp/sing-box/rulesets"
   "TMP_SUBSCRIPTION_FOLDER=$WORK_DIR/tmp/sing-box/subscriptions"
-  "FORKOP_RUNTIME_STATE_DIR=$WORK_DIR/run"
-  "FORKOP_SUBSCRIPTION_UPDATE_STATE_DIR=$WORK_DIR/run/subscription-update"
-  "FORKOP_SUBSCRIPTION_UPDATE_JOB_DIR=$WORK_DIR/run/subscription-update-jobs"
-  "FORKOP_SUBSCRIPTION_LINKS_DIR=$WORK_DIR/run/subscription-links"
-  "FORKOP_SUBSCRIPTION_METADATA_DIR=$WORK_DIR/run/subscription-metadata"
-  "FORKOP_OUTBOUND_METADATA_DIR=$WORK_DIR/run/outbound-metadata"
-  "FORKOP_SECTION_CACHE_DIR=$WORK_DIR/run/section-cache"
-  "FORKOP_RUNTIME_CACHE_FORMAT_FILE=$WORK_DIR/run/cache-format"
-  "FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR=$WORK_DIR/persistent/subscription-cache"
-  "FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE=$WORK_DIR/persistent/subscription-cache/cache-format"
+  "NAZZHUB_RUNTIME_STATE_DIR=$WORK_DIR/run"
+  "NAZZHUB_SUBSCRIPTION_UPDATE_STATE_DIR=$WORK_DIR/run/subscription-update"
+  "NAZZHUB_SUBSCRIPTION_UPDATE_JOB_DIR=$WORK_DIR/run/subscription-update-jobs"
+  "NAZZHUB_SUBSCRIPTION_LINKS_DIR=$WORK_DIR/run/subscription-links"
+  "NAZZHUB_SUBSCRIPTION_METADATA_DIR=$WORK_DIR/run/subscription-metadata"
+  "NAZZHUB_OUTBOUND_METADATA_DIR=$WORK_DIR/run/outbound-metadata"
+  "NAZZHUB_SECTION_CACHE_DIR=$WORK_DIR/run/section-cache"
+  "NAZZHUB_RUNTIME_CACHE_FORMAT_FILE=$WORK_DIR/run/cache-format"
+  "NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR=$WORK_DIR/persistent/subscription-cache"
+  "NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE=$WORK_DIR/persistent/subscription-cache/cache-format"
 )
 
 async_response="$(env "${ASYNC_ENV[@]}" ucode -L "$ROOT_DIR/nazzhub/files/usr/lib" "$UPDATES_UC" subscription-update-async proxy 1)"

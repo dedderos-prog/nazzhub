@@ -42,18 +42,18 @@ require_file_pattern() {
   grep -Fq "$pattern" "$file" || fail "$label"
 }
 
-[ -r "$NAZZHUB_BIN" ] || fail "forkop binary source is missing"
-[ -r "$NAZZHUB_BIN" ] || fail "forkop entrypoint is missing"
+[ -r "$NAZZHUB_BIN" ] || fail "nazzhub binary source is missing"
+[ -r "$NAZZHUB_BIN" ] || fail "nazzhub entrypoint is missing"
 [ -r "$LIFECYCLE_UC" ] || fail "service/lifecycle.uc is missing"
 
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch startup through service/lifecycle.uc"
 reject_pattern "trap " \
-  "forkop shell entrypoint must not own startup fail-safe traps"
+  "nazzhub shell entrypoint must not own startup fail-safe traps"
 reject_pattern "clear_startup_failsafe_trap" \
-  "forkop shell entrypoint must not keep old trap helper"
+  "nazzhub shell entrypoint must not keep old trap helper"
 require_pattern 'module_background(UPDATES_UC, [ "list-update" ])' \
   "startup list_update background job must be owned by service/lifecycle.uc"
 require_pattern 'module_background(DIAGNOSTICS_UC, [ "get-system-info" ])' \
@@ -91,7 +91,7 @@ require_file_pattern "$INITD_UC" 'reload pending >/dev/null 2>&1 1000>&- &' \
   "service/initd.uc pending reload worker must close inherited procd lock fd"
 require_file_pattern "$STATE_UC" 'reload pending >/dev/null 2>&1 1000>&- &' \
   "service/state.uc pending reload worker must close inherited procd lock fd"
-require_file_pattern "$NAZZHUB_INIT" 'FORKOP_LAST_START_STATUS="$?"' \
+require_file_pattern "$NAZZHUB_INIT" 'NAZZHUB_LAST_START_STATUS="$?"' \
   "init.d start_service must preserve backend start status for rc.common"
 require_file_pattern "$NAZZHUB_INIT" 'service_started()' \
   "init.d must return preserved start status through rc.common service_started hook"

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FORKOP_FILES="$ROOT_DIR/nazzhub/files"
-NAZZHUB_BIN="$FORKOP_FILES/usr/bin/nazzhub"
-NAZZHUB_LIB="$FORKOP_FILES/usr/lib"
-NAZZHUB_INIT="$FORKOP_FILES/etc/init.d/nazzhub"
+NAZZHUB_FILES="$ROOT_DIR/nazzhub/files"
+NAZZHUB_BIN="$NAZZHUB_FILES/usr/bin/nazzhub"
+NAZZHUB_LIB="$NAZZHUB_FILES/usr/lib"
+NAZZHUB_INIT="$NAZZHUB_FILES/etc/init.d/nazzhub"
 LUCI_ROOT="$ROOT_DIR/luci-app-nazzhub/root"
 LUCI_UCI_DEFAULTS="$LUCI_ROOT/etc/uci-defaults/50_luci-nazzhub"
 
@@ -15,8 +15,8 @@ fail() {
 }
 
 [ -d "$NAZZHUB_LIB" ] || fail "runtime library directory is missing"
-[ -r "$NAZZHUB_BIN" ] || fail "forkop ucode entrypoint is missing"
-[ -r "$NAZZHUB_INIT" ] || fail "forkop init.d entrypoint is missing"
+[ -r "$NAZZHUB_BIN" ] || fail "nazzhub ucode entrypoint is missing"
+[ -r "$NAZZHUB_INIT" ] || fail "nazzhub init.d entrypoint is missing"
 [ -r "$LUCI_UCI_DEFAULTS" ] || fail "LuCI uci-defaults entrypoint is missing"
 
 runtime_shell_files="$(find "$NAZZHUB_LIB" -type f -name '*.sh' -print)"
@@ -24,12 +24,12 @@ runtime_shell_files="$(find "$NAZZHUB_LIB" -type f -name '*.sh' -print)"
   fail "runtime library must not contain shell owners: $runtime_shell_files"
 
 legacy_shell_owners='runtime_state\.sh|rules_nft_runtime\.sh|config_validation\.sh|sing_box_runtime\.sh|updates_runtime\.sh|updater\.sh|status_diagnostics\.sh|helpers\.sh|constants\.sh|subscription_runtime\.sh|byedpi\.sh|zapret\.sh|zapret2\.sh'
-if find "$FORKOP_FILES" -type f -print | grep -E "$legacy_shell_owners" >/dev/null 2>&1; then
-  fail "legacy runtime shell owner file returned under forkop/files"
+if find "$NAZZHUB_FILES" -type f -print | grep -E "$legacy_shell_owners" >/dev/null 2>&1; then
+  fail "legacy runtime shell owner file returned under nazzhub/files"
 fi
 
 shell_scripts="$(
-  find "$FORKOP_FILES" "$LUCI_ROOT" -type f -print |
+  find "$NAZZHUB_FILES" "$LUCI_ROOT" -type f -print |
     while IFS= read -r file; do
       first_line="$(sed -n '1p' "$file")"
       case "$first_line" in
@@ -44,7 +44,7 @@ shell_scripts="$(
 expected_shell_scripts="$(
   printf '%s\n' \
     'luci-app-nazzhub/root/etc/uci-defaults/50_luci-nazzhub' \
-    'forkop/files/etc/init.d/nazzhub' |
+    'nazzhub/files/etc/init.d/nazzhub' |
     LC_ALL=C sort
 )"
 
@@ -59,7 +59,7 @@ grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
   fail "/usr/bin/nazzhub must remain a direct ucode executable"
 grep -Fq 'function command_spec(command)' "$NAZZHUB_BIN" ||
   fail "/usr/bin/nazzhub must own command routing in ucode"
-if grep -n -E '#!/bin/(ba)?sh|exec[[:space:]]+ucode|run_module\(|FORKOP_COMMAND' "$NAZZHUB_BIN" >/dev/null 2>&1; then
+if grep -n -E '#!/bin/(ba)?sh|exec[[:space:]]+ucode|run_module\(|NAZZHUB_COMMAND' "$NAZZHUB_BIN" >/dev/null 2>&1; then
   fail "/usr/bin/nazzhub must not regress to a shell loader or shell router"
 fi
 
@@ -77,7 +77,7 @@ grep -Fq 'initd_ucode trigger-plan' "$NAZZHUB_INIT" ||
 if grep -n -E '(^|[^[:alnum:]_])(uci|config_load|config_get|config_foreach|jsonfilter|nft|iptables|ip6?tables|sing-box|dnsmasq|curl|wget|opkg|apk)([[:space:]]|$)' "$NAZZHUB_INIT" >/dev/null 2>&1; then
   fail "init.d must not own UCI, routing, download, package, dnsmasq, nft, or sing-box decisions"
 fi
-if grep -n -E 'FORKOP_RELOAD_LOCK|FORKOP_URLTEST_SELECTOR_SWITCHES|capture_reload_state|populate_nft_runtime_sets|rebuild_nft_runtime|apply_pending_urltest_selector_switches' "$NAZZHUB_INIT" >/dev/null 2>&1; then
+if grep -n -E 'NAZZHUB_RELOAD_LOCK|NAZZHUB_URLTEST_SELECTOR_SWITCHES|capture_reload_state|populate_nft_runtime_sets|rebuild_nft_runtime|apply_pending_urltest_selector_switches' "$NAZZHUB_INIT" >/dev/null 2>&1; then
   fail "init.d must not own runtime state or reload decisions"
 fi
 

@@ -9,7 +9,7 @@ let domain_config = require("config.domain");
 let connections = require("config.connections");
 let routing_rulesets = require("routing.rulesets");
 let runtime_constants = require("singbox.constants");
-const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("FORKOP_CONFIG_NAME") || "nazzhub";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
 const DNS_SOURCE_SET = "nazzhub_dns_sources";
 const DNS_SOURCE6_SET = "nazzhub_dns_sources6";
 

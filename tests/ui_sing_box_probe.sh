@@ -27,9 +27,9 @@ fail() {
 
 cat >"$PROBE_BIN" <<'SH'
 #!/bin/sh
-printf '%s\n' "$$" >>"$FORKOP_TEST_SING_BOX_PROBE_PIDS"
-printf 'probe\n' >>"$FORKOP_TEST_SING_BOX_PROBE_COUNT"
-if [ "${FORKOP_TEST_SING_BOX_PROBE_MODE:-fast}" = "slow" ]; then
+printf '%s\n' "$$" >>"$NAZZHUB_TEST_SING_BOX_PROBE_PIDS"
+printf 'probe\n' >>"$NAZZHUB_TEST_SING_BOX_PROBE_COUNT"
+if [ "${NAZZHUB_TEST_SING_BOX_PROBE_MODE:-fast}" = "slow" ]; then
   exec sleep 30
 fi
 printf 'sing-box version 1.13.14\n\n'
@@ -44,24 +44,24 @@ chmod 755 "$WORK_DIR/opkg"
 
 ui_capabilities() {
   PATH="$WORK_DIR:$PATH" \
-  NAZZHUB_CONFIG_NAME=forkop-ui-probe-test \
-  FORKOP_UI_STATE_DIR="$WORK_DIR/state" \
-  FORKOP_UI_COMPONENT_ACTION_DIR="$WORK_DIR/components" \
-  FORKOP_UI_SING_BOX_VERSION_CACHE_FILE="$CACHE_FILE" \
-  FORKOP_UI_SING_BOX_VARIANT_STATE_FILE="$WORK_DIR/missing-variant" \
-  FORKOP_UI_SING_BOX_BIN_PATH="$PROBE_BIN" \
-  FORKOP_UI_SING_BOX_VERSION_PROBE_TIMEOUT_SECONDS=1 \
-  FORKOP_UI_SING_BOX_VERSION_PROBE_FAILURE_TTL_SECONDS=30 \
+  NAZZHUB_CONFIG_NAME=nazzhub-ui-probe-test \
+  NAZZHUB_UI_STATE_DIR="$WORK_DIR/state" \
+  NAZZHUB_UI_COMPONENT_ACTION_DIR="$WORK_DIR/components" \
+  NAZZHUB_UI_SING_BOX_VERSION_CACHE_FILE="$CACHE_FILE" \
+  NAZZHUB_UI_SING_BOX_VARIANT_STATE_FILE="$WORK_DIR/missing-variant" \
+  NAZZHUB_UI_SING_BOX_BIN_PATH="$PROBE_BIN" \
+  NAZZHUB_UI_SING_BOX_VERSION_PROBE_TIMEOUT_SECONDS=1 \
+  NAZZHUB_UI_SING_BOX_VERSION_PROBE_FAILURE_TTL_SECONDS=30 \
   ZAPRET_PROVIDER_NFQWS_BIN="$WORK_DIR/missing-nfqws" \
   ZAPRET2_PROVIDER_NFQWS2_BIN="$WORK_DIR/missing-nfqws2" \
   BYEDPI_BIN="$WORK_DIR/missing-ciadpi" \
-  FORKOP_TEST_SING_BOX_PROBE_COUNT="$PROBE_COUNT" \
-  FORKOP_TEST_SING_BOX_PROBE_PIDS="$PROBE_PIDS" \
+  NAZZHUB_TEST_SING_BOX_PROBE_COUNT="$PROBE_COUNT" \
+  NAZZHUB_TEST_SING_BOX_PROBE_PIDS="$PROBE_PIDS" \
   ucode -L "$NAZZHUB_LIB" "$UI_UC" get-ui-capabilities
 }
 
-fast_first="$(FORKOP_TEST_SING_BOX_PROBE_MODE=fast ui_capabilities)"
-fast_second="$(FORKOP_TEST_SING_BOX_PROBE_MODE=fast ui_capabilities)"
+fast_first="$(NAZZHUB_TEST_SING_BOX_PROBE_MODE=fast ui_capabilities)"
+fast_second="$(NAZZHUB_TEST_SING_BOX_PROBE_MODE=fast ui_capabilities)"
 [ "$(wc -l <"$PROBE_COUNT")" -eq 1 ] ||
   fail "successful sing-box capability detection must be cached by binary signature"
 
@@ -82,7 +82,7 @@ rm -rf "$CACHE_FILE" "$CACHE_FILE.lock"
 start_seconds=$SECONDS
 workers=""
 for index in 1 2 3 4 5; do
-  FORKOP_TEST_SING_BOX_PROBE_MODE=slow ui_capabilities >"$WORK_DIR/slow-$index.json" &
+  NAZZHUB_TEST_SING_BOX_PROBE_MODE=slow ui_capabilities >"$WORK_DIR/slow-$index.json" &
   workers="$workers $!"
 done
 for worker in $workers; do
@@ -106,7 +106,7 @@ if (value.sing_box_extended !== 0 || value.sing_box_tiny !== 0 || value.sing_box
 NODE
 done
 
-FORKOP_TEST_SING_BOX_PROBE_MODE=slow ui_capabilities >/dev/null
+NAZZHUB_TEST_SING_BOX_PROBE_MODE=slow ui_capabilities >/dev/null
 [ "$(wc -l <"$PROBE_COUNT")" -eq 1 ] ||
   fail "failed sing-box probe must be cached during the retry cooldown"
 

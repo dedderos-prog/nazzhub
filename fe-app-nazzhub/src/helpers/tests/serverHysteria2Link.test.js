@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const serverViewPath = path.resolve(
   testDir,
-  '../../../../luci-app-forkop/htdocs/luci-static/resources/view/forkop/server.js',
+  '../../../../luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/server.js',
 );
 
 function loadBuildHysteria2Link(values) {
@@ -52,7 +52,7 @@ function loadBuildHysteria2Link(values) {
     },
   };
 
-  return factory(uci, 'forkop', { location: { hostname: 'router.lan' } });
+  return factory(uci, 'nazzhub', { location: { hostname: 'router.lan' } });
 }
 
 describe('buildHysteria2Link', () => {

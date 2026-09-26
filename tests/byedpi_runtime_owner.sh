@@ -24,7 +24,7 @@ fail() {
   fail "byedpi.sh shell owner must be removed"
 
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch lifecycle orchestration through service/lifecycle.uc"
 grep -Fq 'providers/byedpi/runtime.uc' "$LIFECYCLE_UC" ||

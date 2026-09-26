@@ -5,8 +5,8 @@ let uci_core = require("core.uci");
 let runtime_constants = require("singbox.constants");
 let validator_module = null;
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
 const BYEDPI_BIN = getenv("BYEDPI_BIN") || "/usr/bin/ciadpi";
 const BYEDPI_SERVICE_INIT = getenv("BYEDPI_SERVICE_INIT") || "/etc/init.d/byedpi";
 const BYEDPI_STATE_DIR = getenv("BYEDPI_STATE_DIR") || "/var/run/nazzhub/byedpi";
@@ -75,7 +75,7 @@ function command_exists(name) {
 
 function log_message(message, level) {
     level = as_string(level || "info");
-    command_success_from_args([ "logger", "-t", "forkop", "[" + level + "] " + as_string(message) ]);
+    command_success_from_args([ "logger", "-t", "nazzhub", "[" + level + "] " + as_string(message) ]);
 }
 
 function object_or_empty(value) {
@@ -320,20 +320,20 @@ function start_runtime() {
         return;
 
     if (standalone_service_enabled())
-        log_message("Standalone byedpi service is enabled. Forkop manages ciadpi itself for action 'byedpi'; disable standalone byedpi autostart to avoid boot-time port conflicts.", "warn");
+        log_message("Standalone byedpi service is enabled. Nazzhub manages ciadpi itself for action 'byedpi'; disable standalone byedpi autostart to avoid boot-time port conflicts.", "warn");
 
     if (standalone_service_running()) {
-        log_message("Stopping standalone byedpi service before starting Forkop-managed ciadpi runtime", "info");
+        log_message("Stopping standalone byedpi service before starting Nazzhub-managed ciadpi runtime", "info");
         command_success_from_args([ BYEDPI_SERVICE_INIT, "stop" ]);
         command_success_from_args([ "sleep", "1" ]);
         if (standalone_service_running()) {
-            log_message("Standalone byedpi service is still running and may conflict with Forkop-managed ciadpi runtime. Aborted.", "fatal");
+            log_message("Standalone byedpi service is still running and may conflict with Nazzhub-managed ciadpi runtime. Aborted.", "fatal");
             exit(1);
         }
     }
 
     if (!ensure_runtime_dirs()) {
-        log_message("Failed to prepare the Forkop ByeDPI state directory in " + BYEDPI_STATE_DIR + ". Aborted.", "fatal");
+        log_message("Failed to prepare the Nazzhub ByeDPI state directory in " + BYEDPI_STATE_DIR + ". Aborted.", "fatal");
         exit(1);
     }
 
@@ -482,15 +482,15 @@ function status_json() {
     if (configured && !provider)
         message = "action=byedpi is configured, but ciadpi is not available at " + BYEDPI_BIN;
     else if (configured && standalone_running)
-        message = "standalone byedpi service is active together with Forkop action=byedpi; port conflicts are possible";
+        message = "standalone byedpi service is active together with Nazzhub action=byedpi; port conflicts are possible";
     else if (configured && standalone_enabled)
-        message = "standalone byedpi service autostart is enabled; disable it to avoid boot-time port conflicts with Forkop action=byedpi";
+        message = "standalone byedpi service autostart is enabled; disable it to avoid boot-time port conflicts with Nazzhub action=byedpi";
     else if (running > expected || supervisors > expected)
-        message = "unexpected Forkop-managed ciadpi processes are running without matching action=byedpi rules";
+        message = "unexpected Nazzhub-managed ciadpi processes are running without matching action=byedpi rules";
     else if (configured && unstable)
-        message = "Forkop-managed ciadpi has restarted after exiting; the ByeDPI strategy or traffic load may be unstable";
+        message = "Nazzhub-managed ciadpi has restarted after exiting; the ByeDPI strategy or traffic load may be unstable";
     else if (configured && !ready)
-        message = "action=byedpi is configured, but the Forkop-managed ciadpi runtime is not ready";
+        message = "action=byedpi is configured, but the Nazzhub-managed ciadpi runtime is not ready";
     else if (!configured && !provider && pkg)
         message = "byedpi package is installed, but ciadpi is not available at " + BYEDPI_BIN;
     else if (!configured && !provider)

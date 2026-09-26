@@ -30,7 +30,7 @@
 // Updates
 "require view.nazzhub.updates as updates";
 
-const UCI_PACKAGE = main.FORKOP_UCI_PACKAGE;
+const UCI_PACKAGE = main.NAZZHUB_UCI_PACKAGE;
 
 function renderSectionAdd(sectionRef, extra_class) {
   const el = form.GridSection.prototype.renderSectionAdd.apply(sectionRef, [
@@ -123,7 +123,7 @@ const EntryPoint = {
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent(main.FORKOP_ACTION_PROVIDERS_AVAILABILITY_EVENT, {
+          new CustomEvent(main.NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT, {
             detail: {
               zapretInstalled: uiCapabilities.zapretInstalled,
               zapret2Installed: uiCapabilities.zapret2Installed,
@@ -211,9 +211,9 @@ const EntryPoint = {
             failed: false,
             data: {
               singbox: Number(data.service.sing_box?.running) || 0,
-              forkopRunning: Number((data.service.nazzhub || data.service.forkop)?.running) || 0,
-              forkopEnabled: Number((data.service.nazzhub || data.service.forkop)?.enabled) || 0,
-              forkopStatus: (data.service.nazzhub || data.service.forkop)?.status || "",
+              nazzhubRunning: Number((data.service.nazzhub || data.service.nazzhub)?.running) || 0,
+              nazzhubEnabled: Number((data.service.nazzhub || data.service.nazzhub)?.enabled) || 0,
+              nazzhubStatus: (data.service.nazzhub || data.service.nazzhub)?.status || "",
             },
           },
         });
@@ -224,11 +224,11 @@ const EntryPoint = {
 
     const loadFallbackUiCapabilities = function () {
       return Promise.allSettled([
-        main.ForkopShellMethods.getServerCapabilities(),
-        main.ForkopShellMethods.checkZapretRuntime(),
-        main.ForkopShellMethods.checkZapret2Runtime(),
-        main.ForkopShellMethods.checkByedpiRuntime(),
-        main.ForkopShellMethods.checkInboundsConfig(),
+        main.NazzhubShellMethods.getServerCapabilities(),
+        main.NazzhubShellMethods.checkZapretRuntime(),
+        main.NazzhubShellMethods.checkZapret2Runtime(),
+        main.NazzhubShellMethods.checkByedpiRuntime(),
+        main.NazzhubShellMethods.checkInboundsConfig(),
       ]).then(
         ([
           serverCapabilitiesResult,
@@ -310,7 +310,7 @@ const EntryPoint = {
         return uiCapabilitiesPromise;
       }
 
-      uiCapabilitiesPromise = main.ForkopShellMethods.getUiCapabilities()
+      uiCapabilitiesPromise = main.NazzhubShellMethods.getUiCapabilities()
         .then((response) => {
           if (!response?.success) {
             throw new Error("UI capabilities request failed");
@@ -320,7 +320,7 @@ const EntryPoint = {
         })
         .catch((error) => {
           console.warn("Failed to load NAZZHUB UI capabilities", error);
-          return main.ForkopShellMethods.getUiState()
+          return main.NazzhubShellMethods.getUiState()
             .then((response) => {
               if (!response?.success) {
                 throw new Error("UI state request failed");
@@ -339,16 +339,16 @@ const EntryPoint = {
 
       return uiCapabilitiesPromise;
     };
-    const forkopMap = new form.Map(
+    const nazzhubMap = new form.Map(
       UCI_PACKAGE,
       _("NAZZHUB Settings"),
       _("Configuration for NAZZHUB service"),
     );
-    forkopMap.tabbed = true;
-    const originalHandleSaveApply = forkopMap.handleSaveApply;
-    forkopMap.handleSaveApply = function (ev, mode) {
+    nazzhubMap.tabbed = true;
+    const originalHandleSaveApply = nazzhubMap.handleSaveApply;
+    nazzhubMap.handleSaveApply = function (ev, mode) {
       const refreshUiState = function () {
-        main.ForkopShellMethods.getUiState()
+        main.NazzhubShellMethods.getUiState()
           .then((response) => {
             if (
               response?.success &&
@@ -367,7 +367,7 @@ const EntryPoint = {
             ...servicesInfoWidget,
             data: {
               ...servicesInfoWidget.data,
-              forkopStatus: "reloading",
+              nazzhubStatus: "reloading",
             },
           },
         });
@@ -386,7 +386,7 @@ const EntryPoint = {
         });
     };
 
-    const subscriptionSection = forkopMap.section(
+    const subscriptionSection = nazzhubMap.section(
       form.TypedSection,
       "subscription_url",
       _("Subscription"),
@@ -405,9 +405,9 @@ const EntryPoint = {
           ? [allSubSections[0][".name"]]
           : ["main_sub"];
     };
-    subscription.createSubscriptionContent(subscriptionSection, forkopMap);
+    subscription.createSubscriptionContent(subscriptionSection, nazzhubMap);
 
-    const rulesSection = forkopMap.section(
+    const rulesSection = nazzhubMap.section(
       form.GridSection,
       "section",
       _("Sections"),
@@ -424,7 +424,7 @@ const EntryPoint = {
     });
     section.createSectionContent(rulesSection);
 
-    const serverSection = forkopMap.section(
+    const serverSection = nazzhubMap.section(
       form.GridSection,
       "server",
       _("Servers"),
@@ -442,7 +442,7 @@ const EntryPoint = {
     });
     server.createServerContent(serverSection, uiCapabilities);
 
-    const settingsSection = forkopMap.section(
+    const settingsSection = nazzhubMap.section(
       form.TypedSection,
       "settings",
       _("Settings"),
@@ -454,7 +454,7 @@ const EntryPoint = {
     };
     settings.createSettingsContent(settingsSection, uiCapabilities);
 
-    const diagnosticSection = forkopMap.section(
+    const diagnosticSection = nazzhubMap.section(
       form.TypedSection,
       "diagnostic",
       _("Diagnostics"),
@@ -466,7 +466,7 @@ const EntryPoint = {
     };
     diagnostic.createDiagnosticContent(diagnosticSection);
 
-    const dashboardSection = forkopMap.section(
+    const dashboardSection = nazzhubMap.section(
       form.TypedSection,
       "dashboard",
       _("Dashboard"),
@@ -478,7 +478,7 @@ const EntryPoint = {
     };
     dashboard.createDashboardContent(dashboardSection);
 
-    const monitoringSection = forkopMap.section(
+    const monitoringSection = nazzhubMap.section(
       form.TypedSection,
       "monitoring",
       _("Monitoring"),
@@ -490,7 +490,7 @@ const EntryPoint = {
     };
     monitoring.createMonitoringContent(monitoringSection);
 
-    const updatesSection = forkopMap.section(
+    const updatesSection = nazzhubMap.section(
       form.TypedSection,
       "updates",
       _("Components"),
@@ -504,7 +504,7 @@ const EntryPoint = {
 
     await loadUiCapabilities().catch(() => null);
 
-    const rendered = await forkopMap.render();
+    const rendered = await nazzhubMap.render();
     main.coreService({
       waitForLogWatcherStart: loadUiCapabilities,
       logWatcherStartDelayMs: 5000,

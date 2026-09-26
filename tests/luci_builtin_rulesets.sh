@@ -2,8 +2,8 @@
 set -eo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SECTION_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/forkop/section.js"
-MAIN_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/forkop/main.js"
+SECTION_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/section.js"
+MAIN_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/main.js"
 
 node - "$SECTION_JS" "$MAIN_JS" <<'NODE'
 const fs = require("fs");

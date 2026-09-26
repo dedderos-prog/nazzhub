@@ -5,31 +5,31 @@ let uci_core = require("core.uci");
 let common = require("core.common");
 let runtime_dns = require("singbox.dns");
 
-const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("FORKOP_CONFIG_NAME") || "nazzhub";
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
 const TMP_SING_BOX_FOLDER = getenv("TMP_SING_BOX_FOLDER") || "/tmp/sing-box";
 const TMP_RULESET_FOLDER = getenv("TMP_RULESET_FOLDER") || TMP_SING_BOX_FOLDER + "/rulesets";
 const TMP_SUBSCRIPTION_FOLDER = getenv("TMP_SUBSCRIPTION_FOLDER") || TMP_SING_BOX_FOLDER + "/subscriptions";
-const RUNTIME_STATE_DIR = getenv("FORKOP_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
-const SUBSCRIPTION_UPDATE_STATE_DIR = getenv("FORKOP_SUBSCRIPTION_UPDATE_STATE_DIR") || RUNTIME_STATE_DIR + "/subscription-update";
-const SUBSCRIPTION_LINKS_DIR = getenv("FORKOP_SUBSCRIPTION_LINKS_DIR") || RUNTIME_STATE_DIR + "/subscription-links";
-const SUBSCRIPTION_METADATA_DIR = getenv("FORKOP_SUBSCRIPTION_METADATA_DIR") || RUNTIME_STATE_DIR + "/subscription-metadata";
-const OUTBOUND_METADATA_DIR = getenv("FORKOP_OUTBOUND_METADATA_DIR") || RUNTIME_STATE_DIR + "/outbound-metadata";
-const SECTION_CACHE_DIR = getenv("FORKOP_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
-const RUNTIME_CACHE_FORMAT_FILE = getenv("FORKOP_RUNTIME_CACHE_FORMAT_FILE") || RUNTIME_STATE_DIR + "/cache-format";
-const RUNTIME_CACHE_FORMAT = getenv("FORKOP_RUNTIME_CACHE_FORMAT") || "8";
-const PERSISTENT_SUBSCRIPTION_CACHE_DIR = getenv("FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR") || "/etc/nazzhub/subscription-cache";
-const PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE = getenv("FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE") || PERSISTENT_SUBSCRIPTION_CACHE_DIR + "/cache-format";
-const PERSISTENT_SUBSCRIPTION_CACHE_FORMAT = getenv("FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT") || "7";
-const PENDING_RELOAD_FILE = getenv("FORKOP_PENDING_RELOAD_FILE") || RUNTIME_STATE_DIR + "/reload.pending";
-const SERVICE_INIT = getenv("FORKOP_SERVICE_INIT") || "/etc/init.d/nazzhub";
-const NFT_TABLE_NAME = getenv("NFT_TABLE_NAME") || "ForkopTable";
-const NFT_COMMON_SET_NAME = getenv("NFT_COMMON_SET_NAME") || "forkop_subnets";
-const NFT_COMMON6_SET_NAME = getenv("NFT_COMMON6_SET_NAME") || "forkop_subnets6";
-const NFT_PORT_SET_NAME = getenv("NFT_PORT_SET_NAME") || "forkop_ports";
-const NFT_IP_PORT_SET_NAME = getenv("NFT_IP_PORT_SET_NAME") || "forkop_ip_ports";
-const NFT_IP_PORT6_SET_NAME = getenv("NFT_IP_PORT6_SET_NAME") || "forkop_ip6_ports";
-const NFT_INTERFACE_SET_NAME = getenv("NFT_INTERFACE_SET_NAME") || "forkop_interfaces";
+const RUNTIME_STATE_DIR = getenv("NAZZHUB_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
+const SUBSCRIPTION_UPDATE_STATE_DIR = getenv("NAZZHUB_SUBSCRIPTION_UPDATE_STATE_DIR") || RUNTIME_STATE_DIR + "/subscription-update";
+const SUBSCRIPTION_LINKS_DIR = getenv("NAZZHUB_SUBSCRIPTION_LINKS_DIR") || RUNTIME_STATE_DIR + "/subscription-links";
+const SUBSCRIPTION_METADATA_DIR = getenv("NAZZHUB_SUBSCRIPTION_METADATA_DIR") || RUNTIME_STATE_DIR + "/subscription-metadata";
+const OUTBOUND_METADATA_DIR = getenv("NAZZHUB_OUTBOUND_METADATA_DIR") || RUNTIME_STATE_DIR + "/outbound-metadata";
+const SECTION_CACHE_DIR = getenv("NAZZHUB_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
+const RUNTIME_CACHE_FORMAT_FILE = getenv("NAZZHUB_RUNTIME_CACHE_FORMAT_FILE") || RUNTIME_STATE_DIR + "/cache-format";
+const RUNTIME_CACHE_FORMAT = getenv("NAZZHUB_RUNTIME_CACHE_FORMAT") || "8";
+const PERSISTENT_SUBSCRIPTION_CACHE_DIR = getenv("NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR") || "/etc/nazzhub/subscription-cache";
+const PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE = getenv("NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE") || PERSISTENT_SUBSCRIPTION_CACHE_DIR + "/cache-format";
+const PERSISTENT_SUBSCRIPTION_CACHE_FORMAT = getenv("NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT") || "7";
+const PENDING_RELOAD_FILE = getenv("NAZZHUB_PENDING_RELOAD_FILE") || RUNTIME_STATE_DIR + "/reload.pending";
+const SERVICE_INIT = getenv("NAZZHUB_SERVICE_INIT") || "/etc/init.d/nazzhub";
+const NFT_TABLE_NAME = getenv("NFT_TABLE_NAME") || "NazzhubTable";
+const NFT_COMMON_SET_NAME = getenv("NFT_COMMON_SET_NAME") || "nazzhub_subnets";
+const NFT_COMMON6_SET_NAME = getenv("NFT_COMMON6_SET_NAME") || "nazzhub_subnets6";
+const NFT_PORT_SET_NAME = getenv("NFT_PORT_SET_NAME") || "nazzhub_ports";
+const NFT_IP_PORT_SET_NAME = getenv("NFT_IP_PORT_SET_NAME") || "nazzhub_ip_ports";
+const NFT_IP_PORT6_SET_NAME = getenv("NFT_IP_PORT6_SET_NAME") || "nazzhub_ip6_ports";
+const NFT_INTERFACE_SET_NAME = getenv("NFT_INTERFACE_SET_NAME") || "nazzhub_interfaces";
 const NFT_LOCALV4_SET_NAME = getenv("NFT_LOCALV4_SET_NAME") || "localv4";
 const NFT_LOCALV6_SET_NAME = getenv("NFT_LOCALV6_SET_NAME") || "localv6";
 const NFT_FAKEIP_MARK = getenv("NFT_FAKEIP_MARK") || "0x04000000";
@@ -37,7 +37,7 @@ const SB_SERVICE_MIXED_INBOUND_ADDRESS = getenv("SB_SERVICE_MIXED_INBOUND_ADDRES
 const SB_SERVICE_MIXED_INBOUND_PORT = getenv("SB_SERVICE_MIXED_INBOUND_PORT") || "4534";
 const SB_VARIANT_STATE_FILE = getenv("SB_VARIANT_STATE_FILE") || "/etc/nazzhub/sing-box-variant";
 const SB_VERSION_STATE_FILE = getenv("SB_VERSION_STATE_FILE") || "/etc/nazzhub/sing-box-version";
-const SB_MANAGED_SERVICE_MARKER = getenv("SB_MANAGED_SERVICE_MARKER") || "Forkop managed sing-box service for binary variants";
+const SB_MANAGED_SERVICE_MARKER = getenv("SB_MANAGED_SERVICE_MARKER") || "Nazzhub managed sing-box service for binary variants";
 
 function as_string(value) {
     return value == null ? "" : "" + value;
@@ -337,7 +337,7 @@ function sing_box_variant() {
 
 function log_message(message, level) {
     level = as_string(level || "info");
-    command_success_from_args([ "logger", "-t", "forkop", "[" + level + "] " + as_string(message) ]);
+    command_success_from_args([ "logger", "-t", "nazzhub", "[" + level + "] " + as_string(message) ]);
 }
 
 function module_env_capture(env, args) {
@@ -423,7 +423,7 @@ function sing_box_compressed_marker_set() {
 }
 
 function install_managed_service_script() {
-    let tmp = "/etc/init.d/sing-box.forkop." + owner_pid();
+    let tmp = "/etc/init.d/sing-box.nazzhub." + owner_pid();
     if (!write_file(tmp, managed_service_text()))
         return false;
     if (!command_success_from_args([ "chmod", "0755", tmp ])) {
@@ -593,24 +593,24 @@ function service_listen_address_value(settings) {
 
 function subscription_cache_env() {
     return {
-        FORKOP_CONFIG_NAME: CONFIG_NAME,
-        FORKOP_LIB: LIB_DIR,
+        NAZZHUB_CONFIG_NAME: CONFIG_NAME,
+        NAZZHUB_LIB: LIB_DIR,
         TMP_SING_BOX_FOLDER,
         TMP_RULESET_FOLDER,
         TMP_SUBSCRIPTION_FOLDER,
-        FORKOP_RUNTIME_STATE_DIR: RUNTIME_STATE_DIR,
-        FORKOP_SUBSCRIPTION_UPDATE_STATE_DIR: SUBSCRIPTION_UPDATE_STATE_DIR,
-        FORKOP_SUBSCRIPTION_LINKS_DIR: SUBSCRIPTION_LINKS_DIR,
-        FORKOP_SUBSCRIPTION_METADATA_DIR: SUBSCRIPTION_METADATA_DIR,
-        FORKOP_OUTBOUND_METADATA_DIR: OUTBOUND_METADATA_DIR,
-        FORKOP_SECTION_CACHE_DIR: SECTION_CACHE_DIR,
-        FORKOP_RUNTIME_CACHE_FORMAT_FILE: RUNTIME_CACHE_FORMAT_FILE,
-        FORKOP_RUNTIME_CACHE_FORMAT: RUNTIME_CACHE_FORMAT,
-        FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR: PERSISTENT_SUBSCRIPTION_CACHE_DIR,
-        FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE: PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE,
-        FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT: PERSISTENT_SUBSCRIPTION_CACHE_FORMAT,
-        FORKOP_PENDING_RELOAD_FILE: PENDING_RELOAD_FILE,
-        FORKOP_SERVICE_INIT: SERVICE_INIT
+        NAZZHUB_RUNTIME_STATE_DIR: RUNTIME_STATE_DIR,
+        NAZZHUB_SUBSCRIPTION_UPDATE_STATE_DIR: SUBSCRIPTION_UPDATE_STATE_DIR,
+        NAZZHUB_SUBSCRIPTION_LINKS_DIR: SUBSCRIPTION_LINKS_DIR,
+        NAZZHUB_SUBSCRIPTION_METADATA_DIR: SUBSCRIPTION_METADATA_DIR,
+        NAZZHUB_OUTBOUND_METADATA_DIR: OUTBOUND_METADATA_DIR,
+        NAZZHUB_SECTION_CACHE_DIR: SECTION_CACHE_DIR,
+        NAZZHUB_RUNTIME_CACHE_FORMAT_FILE: RUNTIME_CACHE_FORMAT_FILE,
+        NAZZHUB_RUNTIME_CACHE_FORMAT: RUNTIME_CACHE_FORMAT,
+        NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR: PERSISTENT_SUBSCRIPTION_CACHE_DIR,
+        NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE: PERSISTENT_SUBSCRIPTION_CACHE_FORMAT_FILE,
+        NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_FORMAT: PERSISTENT_SUBSCRIPTION_CACHE_FORMAT,
+        NAZZHUB_PENDING_RELOAD_FILE: PENDING_RELOAD_FILE,
+        NAZZHUB_SERVICE_INIT: SERVICE_INIT
     };
 }
 

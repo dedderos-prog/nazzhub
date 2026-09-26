@@ -234,7 +234,7 @@ function release_asset_pair(release, expected_name) {
     return null;
 }
 
-function forkop_release_plan(latest_version, asset_ext, i18n_required) {
+function nazzhub_release_plan(latest_version, asset_ext, i18n_required) {
     let release = object_or_empty(read_stdin_json());
 
     if (as_string(release.tag_name || "") != as_string(latest_version))
@@ -245,10 +245,10 @@ function forkop_release_plan(latest_version, asset_ext, i18n_required) {
 
     let backend = release_asset_pair(release, "nazzhub_" + latest_version + "." + asset_ext);
     if (backend == null)
-        backend = release_asset_pair(release, "forkop_" + latest_version + "." + asset_ext);
+        backend = release_asset_pair(release, "nazzhub_" + latest_version + "." + asset_ext);
     let app = release_asset_pair(release, "luci-app-nazzhub_" + latest_version + "." + asset_ext);
     if (app == null)
-        app = release_asset_pair(release, "luci-app-forkop_" + latest_version + "." + asset_ext);
+        app = release_asset_pair(release, "luci-app-nazzhub_" + latest_version + "." + asset_ext);
     if (backend == null || app == null)
         exit(1);
 
@@ -256,7 +256,7 @@ function forkop_release_plan(latest_version, asset_ext, i18n_required) {
     if (arg_bool(i18n_required)) {
         i18n = release_asset_pair(release, "luci-i18n-nazzhub-ru_" + latest_version + "." + asset_ext);
         if (i18n == null)
-            i18n = release_asset_pair(release, "luci-i18n-forkop-ru_" + latest_version + "." + asset_ext);
+            i18n = release_asset_pair(release, "luci-i18n-nazzhub-ru_" + latest_version + "." + asset_ext);
         if (i18n == null)
             exit(1);
     }
@@ -408,27 +408,27 @@ function updates_normalize_zapret_version(value) {
     print(first_version_token(value), "\n");
 }
 
-function forkop_normalized_release_version(value) {
+function nazzhub_normalized_release_version(value) {
     return as_string(value);
 }
 
-function forkop_release_version_valid(value) {
-    value = forkop_normalized_release_version(value);
+function nazzhub_release_version_valid(value) {
+    value = nazzhub_normalized_release_version(value);
     return match(value, /^[0-9]+[.][0-9]+[.][0-9]+$/) != null;
 }
 
-function forkop_release_version_parts(value) {
-    let version = forkop_normalized_release_version(value);
-    if (!forkop_release_version_valid(version))
+function nazzhub_release_version_parts(value) {
+    let version = nazzhub_normalized_release_version(value);
+    if (!nazzhub_release_version_valid(version))
         return null;
 
     let parts = split(version, ".");
     return [ int(parts[0]), int(parts[1]), int(parts[2]) ];
 }
 
-function forkop_release_version_compare(lhs, rhs) {
-    let lhs_parts = forkop_release_version_parts(lhs);
-    let rhs_parts = forkop_release_version_parts(rhs);
+function nazzhub_release_version_compare(lhs, rhs) {
+    let lhs_parts = nazzhub_release_version_parts(lhs);
+    let rhs_parts = nazzhub_release_version_parts(rhs);
     if (lhs_parts == null || rhs_parts == null)
         return false;
 
@@ -1169,8 +1169,8 @@ else if (mode == "release-asset-name-by-suffix")
     release_asset_name_by_suffix(ARGV[1]);
 else if (mode == "release-asset-url-by-suffix")
     release_asset_url_by_suffix(ARGV[1]);
-else if (mode == "forkop-release-plan")
-    forkop_release_plan(ARGV[1], ARGV[2], ARGV[3]);
+else if (mode == "nazzhub-release-plan")
+    nazzhub_release_plan(ARGV[1], ARGV[2], ARGV[3]);
 else if (mode == "release-metadata-tsv")
     release_metadata_tsv();
 else if (mode == "openwrt-release-value")
@@ -1191,10 +1191,10 @@ else if (mode == "updates-normalize-sing-box-version")
     updates_normalize_sing_box_version(ARGV[1]);
 else if (mode == "updates-normalize-zapret-version")
     updates_normalize_zapret_version(ARGV[1]);
-else if (mode == "forkop-release-version-valid")
-    exit(forkop_release_version_valid(ARGV[1]) ? 0 : 1);
-else if (mode == "forkop-release-version-compare")
-    exit(forkop_release_version_compare(ARGV[1], ARGV[2]) ? 0 : 1);
+else if (mode == "nazzhub-release-version-valid")
+    exit(nazzhub_release_version_valid(ARGV[1]) ? 0 : 1);
+else if (mode == "nazzhub-release-version-compare")
+    exit(nazzhub_release_version_compare(ARGV[1], ARGV[2]) ? 0 : 1);
 else if (mode == "updates-zip-inner-package-path")
     updates_zip_inner_package_path(ARGV[1], ARGV[2], ARGV[3]);
 else if (mode == "updates-archive-member-path")

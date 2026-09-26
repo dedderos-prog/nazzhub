@@ -148,6 +148,11 @@ if [ -x /etc/init.d/nazzhub ]; then
 fi
 if [ -x /etc/init.d/forkop ]; then
     /etc/init.d/forkop stop 2>/dev/null || true
+    /etc/init.d/forkop disable 2>/dev/null || true
+fi
+if [ -x /etc/init.d/sing-box ]; then
+    /etc/init.d/sing-box stop 2>/dev/null || true
+    /etc/init.d/sing-box disable 2>/dev/null || true
 fi
 
 # 9. Deploy backend files
@@ -206,16 +211,16 @@ if [ -x /etc/init.d/rpcd ]; then
     /etc/init.d/rpcd restart >/dev/null 2>&1 || true
 fi
 
-# 12. Enable & start service
-msg "🚀 Включение автозапуска и запуск службы NAZZHUB..."
-/etc/init.d/nazzhub enable >/dev/null 2>&1 || true
-/etc/init.d/nazzhub restart >/dev/null 2>&1 || true
+# 12. Disable autostart by default (manual start required via LuCI Diagnostics)
+msg "⏸️ Служба NAZZHUB установлена (автозапуск sing-box отключен по требованию)..."
+/etc/init.d/nazzhub disable >/dev/null 2>&1 || true
+/etc/init.d/nazzhub stop >/dev/null 2>&1 || true
 
 msg "=========================================================="
-msg "🎉 NAZZHUB успешно установлен и запущен!"
+msg "🎉 NAZZHUB успешно установлен!"
 msg "=========================================================="
 printf '\n'
 msg "📌 Веб-интерфейс доступен в LuCI: «Службы» -> «NAZZHUB»"
-msg "📌 На первой странице вы можете сразу вставить вашу ссылку на подписку VPN."
-msg "📌 Преднастроены: Zapret (YouTube/Discord), VPN Main (Priority), DoH DNS."
+msg "📌 1-я вкладка «Подписка»: просмотр статуса, срока действия и ключа"
+msg "📌 Для первого запуска перейдите во вкладку «Диагностика» и нажмите «Запустить NAZZHUB»"
 printf '\n'

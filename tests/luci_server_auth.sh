@@ -2,7 +2,7 @@
 set -eo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SERVER_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/forkop/server.js"
+SERVER_JS="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/server.js"
 
 node - "$SERVER_JS" <<'NODE'
 const fs = require("fs");

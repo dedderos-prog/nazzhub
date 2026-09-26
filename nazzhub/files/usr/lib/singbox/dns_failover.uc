@@ -6,13 +6,13 @@ let common = require("core.common");
 let core_ip = require("core.ip");
 let runtime_dns = require("singbox.dns");
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
-const RUNTIME_STATE_DIR = getenv("FORKOP_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
-const STATE_FILE = getenv("FORKOP_DNS_FAILOVER_STATE_FILE") || RUNTIME_STATE_DIR + "/dns-failover.json";
-const PID_FILE = getenv("FORKOP_DNS_FAILOVER_PID_FILE") || RUNTIME_STATE_DIR + "/dns-failover.pid";
-const DNS_FAILOVER_UC = getenv("FORKOP_DNS_FAILOVER_UC") || LIB_DIR + "/singbox/dns_failover.uc";
-const SERVICE_BIN = getenv("FORKOP_BIN") || "/usr/bin/nazzhub";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
+const RUNTIME_STATE_DIR = getenv("NAZZHUB_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
+const STATE_FILE = getenv("NAZZHUB_DNS_FAILOVER_STATE_FILE") || RUNTIME_STATE_DIR + "/dns-failover.json";
+const PID_FILE = getenv("NAZZHUB_DNS_FAILOVER_PID_FILE") || RUNTIME_STATE_DIR + "/dns-failover.pid";
+const DNS_FAILOVER_UC = getenv("NAZZHUB_DNS_FAILOVER_UC") || LIB_DIR + "/singbox/dns_failover.uc";
+const SERVICE_BIN = getenv("NAZZHUB_BIN") || "/usr/bin/nazzhub";
 const CHECK_DOMAIN = "example.com";
 
 function as_string(value) {
@@ -79,7 +79,7 @@ function write_state(path, value) {
 }
 
 function log_message(message, level) {
-    command_success_from_args([ "logger", "-t", "forkop", "[" + as_string(level || "info") + "] DNS failover: " + as_string(message) ]);
+    command_success_from_args([ "logger", "-t", "nazzhub", "[" + as_string(level || "info") + "] DNS failover: " + as_string(message) ]);
 }
 
 function duration_milliseconds(value, fallback) {

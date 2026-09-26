@@ -5,7 +5,7 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
 > **NAZZHUB** — служба выборочной и комплексной маршрутизации трафика для роутеров под управлением **OpenWrt** (21.x, 22.x, 23.x, 24.x на opkg/IPK и 25.x+ на apk).  
-> Проект представляет собой форк и развитие решений [Forkop](https://github.com/ushan0v/forkop) и [Podkop](https://github.com/itdoginfo/podkop), полностью переписанный на `ucode` с поддержкой гибридной маршрутизации через sing-box, zapret, zapret2 и ByeDPI.
+> Проект представляет собой форк и развитие решений [Nazzhub](https://github.com/ushan0v/nazzhub) и [Podkop](https://github.com/itdoginfo/podkop), полностью переписанный на `ucode` с поддержкой гибридной маршрутизации через sing-box, zapret, zapret2 и ByeDPI.
 
 ---
 
@@ -22,7 +22,7 @@ sh <(wget -O - https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/inst
 sh <(curl -fsSL https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/install-test.sh)
 ```
 
-#### Способ 2: Стандартная пакетная установка из GitHub Releases (как в Forkop)
+#### Способ 2: Стандартная пакетная установка из GitHub Releases (как в Nazzhub)
 Когда в репозитории собран и опубликован релиз:
 
 ```sh
@@ -114,5 +114,5 @@ sh <(curl -fsSL https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/ins
 Проект распространяется под лицензией **GPL-2.0-or-later**.
 
 Основан на разработках:
-* [Forkop (ushan0v/forkop)](https://github.com/ushan0v/forkop)
+* [Nazzhub (ushan0v/nazzhub)](https://github.com/ushan0v/nazzhub)
 * [Podkop (itdoginfo/podkop)](https://github.com/itdoginfo/podkop)

@@ -21,20 +21,20 @@ export { getProxyUrlName } from './helpers/getProxyUrlName';
 export { injectGlobalStyles } from './helpers/injectGlobalStyles';
 export { showToast } from './helpers/showToast';
 export { getClashUIUrl } from './helpers/getClashApiUrl';
-export { ForkopShellMethods } from './forkop/methods/shell';
-export { coreService } from './forkop/services/core.service';
-export { store } from './forkop/services/store.service';
-export { applyUiStateToStore } from './forkop/services/uiState.service';
-export { DashboardTab } from './forkop/tabs/dashboard';
-export { DiagnosticTab } from './forkop/tabs/diagnostic';
-export { MonitoringTab } from './forkop/tabs/monitoring';
-export { UpdatesTab } from './forkop/tabs/updates';
+export { NazzhubShellMethods } from './nazzhub/methods/shell';
+export { coreService } from './nazzhub/services/core.service';
+export { store } from './nazzhub/services/store.service';
+export { applyUiStateToStore } from './nazzhub/services/uiState.service';
+export { DashboardTab } from './nazzhub/tabs/dashboard';
+export { DiagnosticTab } from './nazzhub/tabs/diagnostic';
+export { MonitoringTab } from './nazzhub/tabs/monitoring';
+export { UpdatesTab } from './nazzhub/tabs/updates';
 export {
   BOOTSTRAP_DNS_SERVER_OPTIONS,
   DEFAULT_LATENCY_TEST_URL,
   DNS_SERVER_OPTIONS,
   DOMAIN_LIST_OPTIONS,
   LATENCY_TEST_URL_OPTIONS,
-  FORKOP_ACTION_PROVIDERS_AVAILABILITY_EVENT,
-  FORKOP_UCI_PACKAGE,
+  NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT,
+  NAZZHUB_UCI_PACKAGE,
 } from './constants';

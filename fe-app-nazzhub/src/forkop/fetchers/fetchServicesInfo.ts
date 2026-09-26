@@ -1,15 +1,15 @@
-import { ForkopShellMethods } from '../methods';
+import { NazzhubShellMethods } from '../methods';
 import { logger } from '../services/logger.service';
 import { store } from '../services/store.service';
 import { refreshRuntimeUiState } from '../services/runtimeUiState.service';
-import { Forkop } from '../types';
+import { Nazzhub } from '../types';
 
 let latestServicesInfoRequestId = 0;
 
 function getSettledMethodResponse<T>(
   scope: string,
-  result: PromiseSettledResult<Forkop.MethodResponse<T>>,
-): Forkop.MethodResponse<T> {
+  result: PromiseSettledResult<Nazzhub.MethodResponse<T>>,
+): Nazzhub.MethodResponse<T> {
   if (result.status === 'fulfilled') {
     return result.value;
   }
@@ -34,34 +34,34 @@ export async function fetchServicesInfo() {
     return uiState;
   }
 
-  const [forkopResult, singboxResult] = await Promise.allSettled([
-    ForkopShellMethods.getStatus(),
-    ForkopShellMethods.getSingBoxStatus(),
+  const [nazzhubResult, singboxResult] = await Promise.allSettled([
+    NazzhubShellMethods.getStatus(),
+    NazzhubShellMethods.getSingBoxStatus(),
   ]);
 
   if (requestId !== latestServicesInfoRequestId) {
     return;
   }
 
-  const forkop = getSettledMethodResponse('getStatus', forkopResult);
+  const nazzhub = getSettledMethodResponse('getStatus', nazzhubResult);
   const singbox = getSettledMethodResponse('getSingBoxStatus', singboxResult);
   const previousData = store.get().servicesInfoWidget.data;
 
   store.set({
     servicesInfoWidget: {
       loading: false,
-      failed: !forkop.success || !singbox.success,
+      failed: !nazzhub.success || !singbox.success,
       data: {
         singbox: singbox.success ? singbox.data.running : previousData.singbox,
-        forkopRunning: forkop.success
-          ? forkop.data.running
-          : previousData.forkopRunning,
-        forkopEnabled: forkop.success
-          ? forkop.data.enabled
-          : previousData.forkopEnabled,
-        forkopStatus: forkop.success
-          ? forkop.data.status
-          : previousData.forkopStatus,
+        nazzhubRunning: nazzhub.success
+          ? nazzhub.data.running
+          : previousData.nazzhubRunning,
+        nazzhubEnabled: nazzhub.success
+          ? nazzhub.data.enabled
+          : previousData.nazzhubEnabled,
+        nazzhubStatus: nazzhub.success
+          ? nazzhub.data.status
+          : previousData.nazzhubStatus,
       },
     },
   });

@@ -27,7 +27,7 @@ fail() {
   fail "zapret2.sh shell owner must be removed"
 
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch lifecycle orchestration through service/lifecycle.uc"
 grep -Fq 'providers/zapret/runtime.uc' "$LIFECYCLE_UC" ||
@@ -119,7 +119,7 @@ grep -Fq 'providers/zapret2/check.uc' "$ZAPRET2_COMMON" ||
 grep -Fq 'providers.zapret2.validator' "$ZAPRET2_COMMON" ||
   fail "providers/zapret2/common.uc must use its own validator module"
 
-status_json="$(NAZZHUB_CONFIG_NAME=forkop-definitely-missing ucode -L "$NAZZHUB_LIB" "$ZAPRET_RUNTIME" status)"
+status_json="$(NAZZHUB_CONFIG_NAME=nazzhub-definitely-missing ucode -L "$NAZZHUB_LIB" "$ZAPRET_RUNTIME" status)"
 JSON_VALUE="$status_json" node - <<'NODE'
 const value = JSON.parse(process.env.JSON_VALUE);
 if (value.configured !== false || value.enabled_rule_count !== 0 || typeof value.provider_path !== 'string') {
@@ -139,14 +139,14 @@ if (!Object.prototype.hasOwnProperty.call(value, 'zapret2_installed') ||
 }
 NODE
 
-ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws2 '--name forkop --intercept=1' >/dev/null ||
+ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws2 '--name nazzhub --intercept=1' >/dev/null ||
   fail "providers/zapret2/validator.uc must validate nfqws2 strategies"
 if ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws '--dpi-desync=fake' >/dev/null 2>&1; then
   fail "providers/zapret2/validator.uc must not validate nfqws strategies"
 fi
 
 printf 'table inet x { chain y { queue num 4301 bypass } }\n' |
-  ucode -L "$NAZZHUB_LIB" "$ZAPRET2_CHECK" nft-queue-overlap ForkopTable 4300 4555 >/dev/null ||
+  ucode -L "$NAZZHUB_LIB" "$ZAPRET2_CHECK" nft-queue-overlap NazzhubTable 4300 4555 >/dev/null ||
   fail "providers/zapret2/check.uc must own zapret2 queue overlap checks"
 
 printf 'zapret runtime ownership checks passed\n'

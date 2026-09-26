@@ -1,5 +1,5 @@
 import { callBaseMethod } from './callBaseMethod';
-import { ClashAPI, Forkop } from '../../types';
+import { ClashAPI, Nazzhub } from '../../types';
 import { executeShellCommand } from '../../../helpers';
 import { isTransientRpcError } from '../../helpers/isTransientRpcError';
 
@@ -50,7 +50,7 @@ function parseJsonObjectOutput<T>(output: string): T | null {
 }
 
 function parseComponentActionOutput(output: string) {
-  return parseJsonObjectOutput<Forkop.ComponentActionResult>(output);
+  return parseJsonObjectOutput<Nazzhub.ComponentActionResult>(output);
 }
 
 function parseComponentActionResult(
@@ -68,13 +68,13 @@ function parseComponentActionStartResult(
     return null;
   }
 
-  return parsedResponse as unknown as Forkop.ComponentActionStartResult;
+  return parsedResponse as unknown as Nazzhub.ComponentActionStartResult;
 }
 
 function parseSubscriptionUpdateStartResult(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
 ) {
-  return parseJsonObjectOutput<Forkop.SubscriptionUpdateStartResult>(
+  return parseJsonObjectOutput<Nazzhub.SubscriptionUpdateStartResult>(
     response.stdout,
   );
 }
@@ -82,7 +82,7 @@ function parseSubscriptionUpdateStartResult(
 function parseSubscriptionUpdateJobState(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
 ) {
-  return parseJsonObjectOutput<Forkop.SubscriptionUpdateJobState>(
+  return parseJsonObjectOutput<Nazzhub.SubscriptionUpdateJobState>(
     response.stdout,
   );
 }
@@ -90,19 +90,19 @@ function parseSubscriptionUpdateJobState(
 function parseUiActionStartResult(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
 ) {
-  return parseJsonObjectOutput<Forkop.UiActionStartResult>(response.stdout);
+  return parseJsonObjectOutput<Nazzhub.UiActionStartResult>(response.stdout);
 }
 
 function parseServiceActionState(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
 ) {
-  return parseJsonObjectOutput<Forkop.ServiceActionState>(response.stdout);
+  return parseJsonObjectOutput<Nazzhub.ServiceActionState>(response.stdout);
 }
 
 function parseLatencyActionState(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
 ) {
-  return parseJsonObjectOutput<Forkop.LatencyActionState>(response.stdout);
+  return parseJsonObjectOutput<Nazzhub.LatencyActionState>(response.stdout);
 }
 
 function isComponentActionJobId(jobId: string) {
@@ -123,7 +123,7 @@ async function readComponentActionState(jobId: string) {
   }
 }
 
-async function readForkopVersion() {
+async function readNazzhubVersion() {
   const response = await executeShellCommand({
     command: '/usr/bin/nazzhub',
     args: ['show_version'],
@@ -139,11 +139,11 @@ async function readForkopVersion() {
 
 async function isComponentActionStillRunning(
   jobId: string,
-  component: Forkop.ComponentName,
-  action: Forkop.ComponentAction,
+  component: Nazzhub.ComponentName,
+  action: Nazzhub.ComponentAction,
 ) {
-  const response = await callBaseMethod<Forkop.UiState>(
-    Forkop.AvailableMethods.GET_UI_STATE,
+  const response = await callBaseMethod<Nazzhub.UiState>(
+    Nazzhub.AvailableMethods.GET_UI_STATE,
     [],
     '/usr/bin/nazzhub',
     { timeout: GET_UI_STATE_RPC_TIMEOUT_MS },
@@ -163,12 +163,12 @@ async function isComponentActionStillRunning(
 
 function componentActionFailure(
   response: Awaited<ReturnType<typeof executeShellCommand>>,
-  parsedResponse?: Pick<Forkop.ComponentActionResult, 'message'> | null,
+  parsedResponse?: Pick<Nazzhub.ComponentActionResult, 'message'> | null,
 ) {
   return {
     success: false,
     error: parsedResponse?.message || response.stderr || _('Failed to execute'),
-  } as Forkop.MethodFailureResponse;
+  } as Nazzhub.MethodFailureResponse;
 }
 
 function uiActionFailure(
@@ -179,7 +179,7 @@ function uiActionFailure(
   return {
     success: false,
     error: parsedResponse?.message || response.stderr || fallback,
-  } as Forkop.MethodFailureResponse;
+  } as Nazzhub.MethodFailureResponse;
 }
 
 function createTransientRpcGraceTracker(graceMs: number) {
@@ -204,160 +204,160 @@ function createTransientRpcGraceTracker(graceMs: number) {
   };
 }
 
-export const ForkopShellMethods = {
+export const NazzhubShellMethods = {
   checkDNSAvailable: async () =>
-    callBaseMethod<Forkop.DnsCheckResult>(
-      Forkop.AvailableMethods.CHECK_DNS_AVAILABLE,
+    callBaseMethod<Nazzhub.DnsCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_DNS_AVAILABLE,
     ),
   checkFakeIP: async () =>
-    callBaseMethod<Forkop.FakeIPCheckResult>(
-      Forkop.AvailableMethods.CHECK_FAKEIP,
+    callBaseMethod<Nazzhub.FakeIPCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_FAKEIP,
     ),
   checkNftRules: async () =>
-    callBaseMethod<Forkop.NftRulesCheckResult>(
-      Forkop.AvailableMethods.CHECK_NFT_RULES,
+    callBaseMethod<Nazzhub.NftRulesCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_NFT_RULES,
     ),
   checkZapretRuntime: async () =>
-    callBaseMethod<Forkop.ZapretCheckResult>(
-      Forkop.AvailableMethods.CHECK_ZAPRET_RUNTIME,
+    callBaseMethod<Nazzhub.ZapretCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_ZAPRET_RUNTIME,
     ),
   checkZapret2Runtime: async () =>
-    callBaseMethod<Forkop.Zapret2CheckResult>(
-      Forkop.AvailableMethods.CHECK_ZAPRET2_RUNTIME,
+    callBaseMethod<Nazzhub.Zapret2CheckResult>(
+      Nazzhub.AvailableMethods.CHECK_ZAPRET2_RUNTIME,
     ),
   checkByedpiRuntime: async () =>
-    callBaseMethod<Forkop.ByedpiCheckResult>(
-      Forkop.AvailableMethods.CHECK_BYEDPI_RUNTIME,
+    callBaseMethod<Nazzhub.ByedpiCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_BYEDPI_RUNTIME,
     ),
   checkInboundsConfig: async () =>
-    callBaseMethod<Forkop.InboundsConfigCheckResult>(
-      Forkop.AvailableMethods.CHECK_INBOUNDS_CONFIG,
+    callBaseMethod<Nazzhub.InboundsConfigCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_INBOUNDS_CONFIG,
     ),
   getStatus: async () =>
-    callBaseMethod<Forkop.GetStatus>(Forkop.AvailableMethods.GET_STATUS),
+    callBaseMethod<Nazzhub.GetStatus>(Nazzhub.AvailableMethods.GET_STATUS),
   getOutboundMetadata: async (section: string) =>
-    callBaseMethod<Forkop.GetOutboundMetadata>(
-      Forkop.AvailableMethods.GET_OUTBOUND_METADATA,
+    callBaseMethod<Nazzhub.GetOutboundMetadata>(
+      Nazzhub.AvailableMethods.GET_OUTBOUND_METADATA,
       [section],
     ),
   getSubscriptionMetadata: async (section: string) =>
-    callBaseMethod<Forkop.SubscriptionMetadata | Forkop.SubscriptionMetadata[]>(
-      Forkop.AvailableMethods.GET_SUBSCRIPTION_METADATA,
+    callBaseMethod<Nazzhub.SubscriptionMetadata | Nazzhub.SubscriptionMetadata[]>(
+      Nazzhub.AvailableMethods.GET_SUBSCRIPTION_METADATA,
       [section],
     ),
   checkSingBox: async () =>
-    callBaseMethod<Forkop.SingBoxCheckResult>(
-      Forkop.AvailableMethods.CHECK_SING_BOX,
+    callBaseMethod<Nazzhub.SingBoxCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_SING_BOX,
     ),
   checkInbounds: async () =>
-    callBaseMethod<Forkop.InboundsCheckResult>(
-      Forkop.AvailableMethods.CHECK_INBOUNDS,
+    callBaseMethod<Nazzhub.InboundsCheckResult>(
+      Nazzhub.AvailableMethods.CHECK_INBOUNDS,
     ),
   getSingBoxStatus: async () =>
-    callBaseMethod<Forkop.GetSingBoxStatus>(
-      Forkop.AvailableMethods.GET_SING_BOX_STATUS,
+    callBaseMethod<Nazzhub.GetSingBoxStatus>(
+      Nazzhub.AvailableMethods.GET_SING_BOX_STATUS,
     ),
   getZapretStatus: async () =>
-    callBaseMethod<Forkop.GetZapretStatus>(
-      Forkop.AvailableMethods.GET_ZAPRET_STATUS,
+    callBaseMethod<Nazzhub.GetZapretStatus>(
+      Nazzhub.AvailableMethods.GET_ZAPRET_STATUS,
     ),
   getZapret2Status: async () =>
-    callBaseMethod<Forkop.GetZapret2Status>(
-      Forkop.AvailableMethods.GET_ZAPRET2_STATUS,
+    callBaseMethod<Nazzhub.GetZapret2Status>(
+      Nazzhub.AvailableMethods.GET_ZAPRET2_STATUS,
     ),
   getByedpiStatus: async () =>
-    callBaseMethod<Forkop.GetByedpiStatus>(
-      Forkop.AvailableMethods.GET_BYEDPI_STATUS,
+    callBaseMethod<Nazzhub.GetByedpiStatus>(
+      Nazzhub.AvailableMethods.GET_BYEDPI_STATUS,
     ),
   getClashApiProxies: async () =>
-    callBaseMethod<ClashAPI.Proxies>(Forkop.AvailableMethods.CLASH_API, [
-      Forkop.AvailableClashAPIMethods.GET_PROXIES,
+    callBaseMethod<ClashAPI.Proxies>(Nazzhub.AvailableMethods.CLASH_API, [
+      Nazzhub.AvailableClashAPIMethods.GET_PROXIES,
     ]),
   getClashApiConnections: async () =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CLASH_API, [
-      Forkop.AvailableClashAPIMethods.GET_CONNECTIONS,
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CLASH_API, [
+      Nazzhub.AvailableClashAPIMethods.GET_CONNECTIONS,
     ]),
   getClashApiProxyLatency: async (tag: string, timeout = '5000') =>
-    callBaseMethod<Forkop.GetClashApiProxyLatency>(
-      Forkop.AvailableMethods.CLASH_API,
-      [Forkop.AvailableClashAPIMethods.GET_PROXY_LATENCY, tag, timeout],
+    callBaseMethod<Nazzhub.GetClashApiProxyLatency>(
+      Nazzhub.AvailableMethods.CLASH_API,
+      [Nazzhub.AvailableClashAPIMethods.GET_PROXY_LATENCY, tag, timeout],
     ),
   getClashApiProxyLatencies: async (tags: string[]) =>
-    callBaseMethod<Forkop.GetClashApiProxyLatencies>(
-      Forkop.AvailableMethods.CLASH_API,
+    callBaseMethod<Nazzhub.GetClashApiProxyLatencies>(
+      Nazzhub.AvailableMethods.CLASH_API,
       [
-        Forkop.AvailableClashAPIMethods.GET_PROXY_LATENCIES,
+        Nazzhub.AvailableClashAPIMethods.GET_PROXY_LATENCIES,
         JSON.stringify(tags),
         '5000',
       ],
     ),
   getClashApiGroupLatency: async (tag: string) =>
-    callBaseMethod<Forkop.GetClashApiGroupLatency>(
-      Forkop.AvailableMethods.CLASH_API,
-      [Forkop.AvailableClashAPIMethods.GET_GROUP_LATENCY, tag, '10000'],
+    callBaseMethod<Nazzhub.GetClashApiGroupLatency>(
+      Nazzhub.AvailableMethods.CLASH_API,
+      [Nazzhub.AvailableClashAPIMethods.GET_GROUP_LATENCY, tag, '10000'],
     ),
   setClashApiGroupProxy: async (group: string, proxy: string) =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CLASH_API, [
-      Forkop.AvailableClashAPIMethods.SET_GROUP_PROXY,
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CLASH_API, [
+      Nazzhub.AvailableClashAPIMethods.SET_GROUP_PROXY,
       group,
       proxy,
     ]),
   closeClashApiConnection: async (connectionId: string) =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CLASH_API, [
-      Forkop.AvailableClashAPIMethods.CLOSE_CONNECTION,
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CLASH_API, [
+      Nazzhub.AvailableClashAPIMethods.CLOSE_CONNECTION,
       connectionId,
     ]),
   closeAllClashApiConnections: async () =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CLASH_API, [
-      Forkop.AvailableClashAPIMethods.CLOSE_ALL_CONNECTIONS,
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CLASH_API, [
+      Nazzhub.AvailableClashAPIMethods.CLOSE_ALL_CONNECTIONS,
     ]),
   enable: async () =>
     callBaseMethod<unknown>(
-      Forkop.AvailableMethods.ENABLE,
+      Nazzhub.AvailableMethods.ENABLE,
       [],
       '/etc/init.d/nazzhub',
     ),
   disable: async () =>
     callBaseMethod<unknown>(
-      Forkop.AvailableMethods.DISABLE,
+      Nazzhub.AvailableMethods.DISABLE,
       [],
       '/etc/init.d/nazzhub',
     ),
   globalCheck: async (masked = true) =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.GLOBAL_CHECK, [
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.GLOBAL_CHECK, [
       masked ? 'masked' : 'raw',
     ]),
   showSingBoxConfig: async (masked = true) =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.SHOW_SING_BOX_CONFIG, [
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.SHOW_SING_BOX_CONFIG, [
       masked ? 'masked' : 'raw',
     ]),
   checkLogs: async () =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CHECK_LOGS),
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CHECK_LOGS),
   checkSingBoxLogs: async () =>
-    callBaseMethod<unknown>(Forkop.AvailableMethods.CHECK_SING_BOX_LOGS),
+    callBaseMethod<unknown>(Nazzhub.AvailableMethods.CHECK_SING_BOX_LOGS),
   getSystemInfo: async () =>
-    callBaseMethod<Forkop.GetSystemInfo>(
-      Forkop.AvailableMethods.GET_SYSTEM_INFO,
+    callBaseMethod<Nazzhub.GetSystemInfo>(
+      Nazzhub.AvailableMethods.GET_SYSTEM_INFO,
     ),
   getServerCapabilities: async () =>
-    callBaseMethod<Forkop.GetServerCapabilities>(
-      Forkop.AvailableMethods.GET_SERVER_CAPABILITIES,
+    callBaseMethod<Nazzhub.GetServerCapabilities>(
+      Nazzhub.AvailableMethods.GET_SERVER_CAPABILITIES,
     ),
   getUiCapabilities: async () =>
-    callBaseMethod<Forkop.GetUiCapabilities>(
-      Forkop.AvailableMethods.GET_UI_CAPABILITIES,
+    callBaseMethod<Nazzhub.GetUiCapabilities>(
+      Nazzhub.AvailableMethods.GET_UI_CAPABILITIES,
     ),
   getUiState: async () =>
-    callBaseMethod<Forkop.UiState>(
-      Forkop.AvailableMethods.GET_UI_STATE,
+    callBaseMethod<Nazzhub.UiState>(
+      Nazzhub.AvailableMethods.GET_UI_STATE,
       [],
       '/usr/bin/nazzhub',
       { timeout: GET_UI_STATE_RPC_TIMEOUT_MS },
     ),
-  serviceActionStart: async (action: Forkop.ServiceAction) => {
+  serviceActionStart: async (action: Nazzhub.ServiceAction) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.SERVICE_ACTION_ASYNC, action],
+      args: [Nazzhub.AvailableMethods.SERVICE_ACTION_ASYNC, action],
       timeout: UI_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseUiActionStartResult(response);
@@ -377,12 +377,12 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.UiActionStartResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.UiActionStartResult>;
   },
   serviceActionStatus: async (jobId: string) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.SERVICE_ACTION_STATUS, jobId],
+      args: [Nazzhub.AvailableMethods.SERVICE_ACTION_STATUS, jobId],
       timeout: UI_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseServiceActionState(response);
@@ -398,13 +398,13 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.ServiceActionState>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.ServiceActionState>;
   },
   waitServiceActionJob: async (jobId: string, startedAt = Date.now()) => {
     while (Date.now() - startedAt < SERVICE_ACTION_TIMEOUT_MS) {
       await sleep(SERVICE_ACTION_POLL_INTERVAL_MS);
 
-      const response = await ForkopShellMethods.serviceActionStatus(jobId);
+      const response = await NazzhubShellMethods.serviceActionStatus(jobId);
 
       if (!response.success) {
         return response;
@@ -420,10 +420,10 @@ export const ForkopShellMethods = {
     return {
       success: false,
       error: _('Operation timed out'),
-    } as Forkop.MethodFailureResponse;
+    } as Nazzhub.MethodFailureResponse;
   },
   latencyTestStart: async (
-    latencyType: Forkop.LatencyActionState['latency_type'],
+    latencyType: Nazzhub.LatencyActionState['latency_type'],
     section: string,
     tag: string,
     timeout?: string,
@@ -431,7 +431,7 @@ export const ForkopShellMethods = {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
       args: [
-        Forkop.AvailableMethods.LATENCY_TEST_ASYNC,
+        Nazzhub.AvailableMethods.LATENCY_TEST_ASYNC,
         latencyType,
         section,
         tag,
@@ -456,12 +456,12 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.UiActionStartResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.UiActionStartResult>;
   },
   latencyTestStatus: async (jobId: string) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.LATENCY_TEST_STATUS, jobId],
+      args: [Nazzhub.AvailableMethods.LATENCY_TEST_STATUS, jobId],
       timeout: UI_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseLatencyActionState(response);
@@ -477,7 +477,7 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.LatencyActionState>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.LatencyActionState>;
   },
   waitLatencyTestJob: async (jobId: string, startedAt = Date.now()) => {
     const transientRpc = createTransientRpcGraceTracker(
@@ -487,7 +487,7 @@ export const ForkopShellMethods = {
     while (Date.now() - startedAt < LATENCY_TEST_TIMEOUT_MS) {
       await sleep(LATENCY_TEST_POLL_INTERVAL_MS);
 
-      const response = await ForkopShellMethods.latencyTestStatus(jobId);
+      const response = await NazzhubShellMethods.latencyTestStatus(jobId);
 
       if (!response.success) {
         if (transientRpc.shouldContinue(response.error)) {
@@ -508,7 +508,7 @@ export const ForkopShellMethods = {
     return {
       success: false,
       error: _('Operation timed out'),
-    } as Forkop.MethodFailureResponse;
+    } as Nazzhub.MethodFailureResponse;
   },
   uiActionAck: async (
     kind: 'service' | 'latency' | 'component' | 'subscription',
@@ -516,7 +516,7 @@ export const ForkopShellMethods = {
   ) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.UI_ACTION_ACK, kind, jobId],
+      args: [Nazzhub.AvailableMethods.UI_ACTION_ACK, kind, jobId],
       timeout: UI_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseUiActionStartResult(response);
@@ -528,15 +528,15 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.UiActionStartResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.UiActionStartResult>;
   },
   componentActionStart: async (
-    component: Forkop.ComponentName,
-    action: Forkop.ComponentAction,
+    component: Nazzhub.ComponentName,
+    action: Nazzhub.ComponentAction,
   ) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.COMPONENT_ACTION_ASYNC, component, action],
+      args: [Nazzhub.AvailableMethods.COMPONENT_ACTION_ASYNC, component, action],
       timeout: COMPONENT_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseComponentActionStartResult(response);
@@ -552,12 +552,12 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.ComponentActionStartResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.ComponentActionStartResult>;
   },
   componentActionStatus: async (jobId: string) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.COMPONENT_ACTION_STATUS, jobId],
+      args: [Nazzhub.AvailableMethods.COMPONENT_ACTION_STATUS, jobId],
       timeout: COMPONENT_ACTION_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseComponentActionResult(response);
@@ -569,16 +569,16 @@ export const ForkopShellMethods = {
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.ComponentActionResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.ComponentActionResult>;
   },
   componentUpdateCheckCache: async () =>
-    callBaseMethod<Forkop.ComponentUpdateCheckCache>(
-      Forkop.AvailableMethods.COMPONENT_UPDATE_CHECK_CACHE,
+    callBaseMethod<Nazzhub.ComponentUpdateCheckCache>(
+      Nazzhub.AvailableMethods.COMPONENT_UPDATE_CHECK_CACHE,
     ),
   waitComponentActionJob: async (
     jobId: string,
-    component: Forkop.ComponentName,
-    action: Forkop.ComponentAction,
+    component: Nazzhub.ComponentName,
+    action: Nazzhub.ComponentAction,
     expectedLatestVersion?: string,
   ) => {
     let selfUpdateVersionMatchedAt = 0;
@@ -598,7 +598,7 @@ export const ForkopShellMethods = {
           return {
             success: true,
             data: stateResponse,
-          } as Forkop.MethodSuccessResponse<Forkop.ComponentActionResult>;
+          } as Nazzhub.MethodSuccessResponse<Nazzhub.ComponentActionResult>;
         }
 
         if (
@@ -612,7 +612,7 @@ export const ForkopShellMethods = {
       lastStatusRefreshAt = Date.now();
       const statusResponse = await executeShellCommand({
         command: '/usr/bin/nazzhub',
-        args: [Forkop.AvailableMethods.COMPONENT_ACTION_STATUS, jobId],
+        args: [Nazzhub.AvailableMethods.COMPONENT_ACTION_STATUS, jobId],
         timeout: COMPONENT_ACTION_RPC_TIMEOUT_MS,
       });
       const parsedResponse = parseComponentActionResult(statusResponse);
@@ -634,9 +634,9 @@ export const ForkopShellMethods = {
           continue;
         }
 
-        if (component === 'forkop' && action === 'install') {
+        if (component === 'nazzhub' && action === 'install') {
           const installedVersion = expectedLatestVersion
-            ? await readForkopVersion()
+            ? await readNazzhubVersion()
             : '';
 
           if (
@@ -657,13 +657,13 @@ export const ForkopShellMethods = {
                   success: true,
                   component,
                   action,
-                  message: translate('Forkop has been installed'),
+                  message: translate('Nazzhub has been installed'),
                   current_version: installedVersion,
                   latest_version: expectedLatestVersion,
                   changed: true,
                   status: 'latest',
                 },
-              } as Forkop.MethodSuccessResponse<Forkop.ComponentActionResult>;
+              } as Nazzhub.MethodSuccessResponse<Nazzhub.ComponentActionResult>;
             }
           }
 
@@ -681,12 +681,12 @@ export const ForkopShellMethods = {
       return {
         success: true,
         data: parsedResponse,
-      } as Forkop.MethodSuccessResponse<Forkop.ComponentActionResult>;
+      } as Nazzhub.MethodSuccessResponse<Nazzhub.ComponentActionResult>;
     }
   },
   subscriptionUpdateStart: async (section?: string, sourceIndex?: number) => {
     const startArgs = [
-      Forkop.AvailableMethods.SUBSCRIPTION_UPDATE_ASYNC,
+      Nazzhub.AvailableMethods.SUBSCRIPTION_UPDATE_ASYNC,
       ...(section ? [section] : []),
       ...(section && sourceIndex !== undefined ? [String(sourceIndex)] : []),
     ];
@@ -708,18 +708,18 @@ export const ForkopShellMethods = {
           parsedResponse?.message ||
           response.stderr ||
           _('Subscription update failed'),
-      } as Forkop.MethodFailureResponse;
+      } as Nazzhub.MethodFailureResponse;
     }
 
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.SubscriptionUpdateStartResult>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.SubscriptionUpdateStartResult>;
   },
   subscriptionUpdateStatus: async (jobId: string) => {
     const response = await executeShellCommand({
       command: '/usr/bin/nazzhub',
-      args: [Forkop.AvailableMethods.SUBSCRIPTION_UPDATE_STATUS, jobId],
+      args: [Nazzhub.AvailableMethods.SUBSCRIPTION_UPDATE_STATUS, jobId],
       timeout: SUBSCRIPTION_UPDATE_RPC_TIMEOUT_MS,
     });
     const parsedResponse = parseSubscriptionUpdateJobState(response);
@@ -728,13 +728,13 @@ export const ForkopShellMethods = {
       return {
         success: false,
         error: response.stderr || _('Subscription update failed'),
-      } as Forkop.MethodFailureResponse;
+      } as Nazzhub.MethodFailureResponse;
     }
 
     return {
       success: true,
       data: parsedResponse,
-    } as Forkop.MethodSuccessResponse<Forkop.SubscriptionUpdateJobState>;
+    } as Nazzhub.MethodSuccessResponse<Nazzhub.SubscriptionUpdateJobState>;
   },
   waitSubscriptionUpdateJob: async (jobId: string) => {
     const transientRpc = createTransientRpcGraceTracker(
@@ -744,7 +744,7 @@ export const ForkopShellMethods = {
     while (true) {
       await sleep(SUBSCRIPTION_UPDATE_POLL_INTERVAL_MS);
 
-      const response = await ForkopShellMethods.subscriptionUpdateStatus(jobId);
+      const response = await NazzhubShellMethods.subscriptionUpdateStatus(jobId);
 
       if (!response.success) {
         if (transientRpc.shouldContinue(response.error)) {

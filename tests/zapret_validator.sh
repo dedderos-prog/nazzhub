@@ -64,10 +64,10 @@ validator_output="$WORK_DIR/zapret-validator.out"
 if ucode -L "$NAZZHUB_LIB" -- "$VALIDATOR" validate nfqws '--qnum=200' >"$validator_output" 2>/dev/null; then
   fail "qnum override should be rejected for nfqws"
 fi
-grep -q 'NFQUEUE number is assigned by Forkop' "$validator_output" ||
+grep -q 'NFQUEUE number is assigned by Nazzhub' "$validator_output" ||
   fail "qnum rejection should explain ownership"
 
-valid_nfqws2="$(ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws2 '--name forkop --intercept=1')"
+valid_nfqws2="$(ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws2 '--name nazzhub --intercept=1')"
 assert_json_field "$valid_nfqws2" valid true
 
 if invalid_nfqws2="$(ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws2 '--intercept=0' 2>/dev/null)"; then
@@ -76,7 +76,7 @@ fi
 assert_json_field "$invalid_nfqws2" valid false
 assert_json_field "$invalid_nfqws2" needle --intercept
 
-if ucode -L "$NAZZHUB_LIB" -- "$VALIDATOR" validate-json nfqws2 '--name forkop --intercept=1' >/dev/null 2>&1; then
+if ucode -L "$NAZZHUB_LIB" -- "$VALIDATOR" validate-json nfqws2 '--name nazzhub --intercept=1' >/dev/null 2>&1; then
   fail "zapret validator must not own nfqws2 validation"
 fi
 if ucode -L "$NAZZHUB_LIB" -- "$ZAPRET2_VALIDATOR" validate-json nfqws '--dpi-desync=fake' >/dev/null 2>&1; then
@@ -95,11 +95,11 @@ let invalid_nfqws = validator.validate_strategy("nfqws", "--hostlist domains.txt
 if (invalid_nfqws.valid || invalid_nfqws.needle != "--hostlist")
     exit(1);
 
-let valid_nfqws2 = zapret2_validator.validate_strategy("nfqws2", "--name forkop --intercept=1", "");
+let valid_nfqws2 = zapret2_validator.validate_strategy("nfqws2", "--name nazzhub --intercept=1", "");
 if (!valid_nfqws2.valid)
     exit(1);
 
-if (validator.validate_strategy("nfqws2", "--name forkop --intercept=1", "").valid)
+if (validator.validate_strategy("nfqws2", "--name nazzhub --intercept=1", "").valid)
     exit(1);
 if (zapret2_validator.validate_strategy("nfqws", "--dpi-desync=fake", "").valid)
     exit(1);

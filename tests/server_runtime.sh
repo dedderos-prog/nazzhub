@@ -59,39 +59,39 @@ LOGGER
 chmod 0755 "$WORK_DIR/bin/logger"
 
 export PATH="$WORK_DIR/bin:$PATH"
-export FORKOP_UCI_STATE_FILE="$STATE"
-export FORKOP_UCI_LOG_FILE="$LOG"
-export NAZZHUB_CONFIG_NAME="forkop"
-export FORKOP_SERVER_RUNTIME_UC="$SERVER_RUNTIME"
+export NAZZHUB_UCI_STATE_FILE="$STATE"
+export NAZZHUB_UCI_LOG_FILE="$LOG"
+export NAZZHUB_CONFIG_NAME="nazzhub"
+export NAZZHUB_SERVER_RUNTIME_UC="$SERVER_RUNTIME"
 
 if grep -E 'uci -q|command -v uci' "$SERVER_RUNTIME" >/dev/null; then
   fail "server/service.uc must use ucode UCI access instead of shelling out to uci"
 fi
 if grep -F 'output("ucode "' "$SERVER_RUNTIME" >/dev/null; then
-  fail "server defaults must not spawn service.uc without the Forkop module path"
+  fail "server defaults must not spawn service.uc without the Nazzhub module path"
 fi
 
 cat >"$STATE" <<'EOF_STATE'
-forkop.vless=server
-forkop.vless.protocol=vless
-forkop.vless.server_users=client|22222222-2222-4222-8222-222222222222|xtls-rprx-vision
-forkop.socks=server
-forkop.socks.protocol=socks
-forkop.socks.label=desk
-forkop.socks_open=server
-forkop.socks_open.protocol=socks
-forkop.socks_open.label=guest
-forkop.socks_open.socks_auth_enabled=0
-forkop.tailscale=server
-forkop.tailscale.protocol=tailscale
-forkop.json=server
-forkop.json.protocol=json_inbound
-forkop.mtproto=server
-forkop.mtproto.protocol=mtproto
-forkop.mtproto.mtproto_secret=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-forkop.mtproto_legacy=server
-forkop.mtproto_legacy.protocol=mtproto
-forkop.mtproto_legacy.server_users=client|eebbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb676f6f676c652e636f6d
+nazzhub.vless=server
+nazzhub.vless.protocol=vless
+nazzhub.vless.server_users=client|22222222-2222-4222-8222-222222222222|xtls-rprx-vision
+nazzhub.socks=server
+nazzhub.socks.protocol=socks
+nazzhub.socks.label=desk
+nazzhub.socks_open=server
+nazzhub.socks_open.protocol=socks
+nazzhub.socks_open.label=guest
+nazzhub.socks_open.socks_auth_enabled=0
+nazzhub.tailscale=server
+nazzhub.tailscale.protocol=tailscale
+nazzhub.json=server
+nazzhub.json.protocol=json_inbound
+nazzhub.mtproto=server
+nazzhub.mtproto.protocol=mtproto
+nazzhub.mtproto.mtproto_secret=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+nazzhub.mtproto_legacy=server
+nazzhub.mtproto_legacy.protocol=mtproto
+nazzhub.mtproto_legacy.server_users=client|eebbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb676f6f676c652e636f6d
 EOF_STATE
 
 ucode -L "$UCODE_LIB" "$SERVER_RUNTIME" prepare-all-defaults
@@ -106,30 +106,30 @@ assert_value() {
   [ "$actual" = "$expected" ] || fail "$path: expected '$expected', got '$actual'"
 }
 
-assert_value forkop.vless.security reality
-assert_value forkop.vless.listen 0.0.0.0
-assert_value forkop.vless.listen_port 443
-assert_value forkop.vless.server_uuid 22222222-2222-4222-8222-222222222222
-assert_value forkop.vless.vless_flow xtls-rprx-vision
-assert_value forkop.vless.reality_short_id abcd1234
-assert_value forkop.vless.reality_private_key private-key
-assert_value forkop.vless.reality_public_key public-key
-assert_value forkop.socks.security none
-assert_value forkop.socks.socks_auth_enabled 1
-assert_value forkop.socks.server_username desk
-assert_value forkop.socks.server_password generated-password
-assert_value forkop.socks_open.socks_auth_enabled 0
-assert_value forkop.socks_open.server_username guest
-assert_value forkop.socks_open.server_password generated-password
-assert_value forkop.tailscale.security none
-assert_value forkop.tailscale.tailscale_control_url https://controlplane.tailscale.com
-assert_value forkop.tailscale.tailscale_hostname forkop-tailscale
-assert_value forkop.tailscale.tailscale_advertise_exit_node 1
-assert_value forkop.json.security none
-assert_value forkop.mtproto.mtproto_secret aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-assert_value forkop.mtproto_legacy.mtproto_secret bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-assert_value forkop.mtproto_legacy.mtproto_faketls google.com
-grep -Fxq 'commit forkop' "$LOG" || fail 'expected config commit'
+assert_value nazzhub.vless.security reality
+assert_value nazzhub.vless.listen 0.0.0.0
+assert_value nazzhub.vless.listen_port 443
+assert_value nazzhub.vless.server_uuid 22222222-2222-4222-8222-222222222222
+assert_value nazzhub.vless.vless_flow xtls-rprx-vision
+assert_value nazzhub.vless.reality_short_id abcd1234
+assert_value nazzhub.vless.reality_private_key private-key
+assert_value nazzhub.vless.reality_public_key public-key
+assert_value nazzhub.socks.security none
+assert_value nazzhub.socks.socks_auth_enabled 1
+assert_value nazzhub.socks.server_username desk
+assert_value nazzhub.socks.server_password generated-password
+assert_value nazzhub.socks_open.socks_auth_enabled 0
+assert_value nazzhub.socks_open.server_username guest
+assert_value nazzhub.socks_open.server_password generated-password
+assert_value nazzhub.tailscale.security none
+assert_value nazzhub.tailscale.tailscale_control_url https://controlplane.tailscale.com
+assert_value nazzhub.tailscale.tailscale_hostname nazzhub-tailscale
+assert_value nazzhub.tailscale.tailscale_advertise_exit_node 1
+assert_value nazzhub.json.security none
+assert_value nazzhub.mtproto.mtproto_secret aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+assert_value nazzhub.mtproto_legacy.mtproto_secret bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+assert_value nazzhub.mtproto_legacy.mtproto_faketls google.com
+grep -Fxq 'commit nazzhub' "$LOG" || fail 'expected config commit'
 
 : >"$LOG"
 ucode -L "$UCODE_LIB" "$SERVER_RUNTIME" prepare-all-defaults

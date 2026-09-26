@@ -8,7 +8,7 @@ vi.mock('../../../../helpers', () => ({
   executeShellCommand: mocks.executeShellCommand,
 }));
 
-import { Forkop } from '../../../types';
+import { Nazzhub } from '../../../types';
 import { callBaseMethod } from '../callBaseMethod';
 
 describe('callBaseMethod', () => {
@@ -24,7 +24,7 @@ describe('callBaseMethod', () => {
     });
 
     const response = await callBaseMethod(
-      Forkop.AvailableMethods.CHECK_DNS_AVAILABLE,
+      Nazzhub.AvailableMethods.CHECK_DNS_AVAILABLE,
     );
 
     expect(response).toEqual({
@@ -41,7 +41,7 @@ describe('callBaseMethod', () => {
     });
 
     const response = await callBaseMethod(
-      Forkop.AvailableMethods.GLOBAL_CHECK,
+      Nazzhub.AvailableMethods.GLOBAL_CHECK,
       [],
       '/usr/bin/nazzhub',
       { allowNonZeroWithStdout: true },
@@ -61,7 +61,7 @@ describe('callBaseMethod', () => {
     });
 
     await callBaseMethod(
-      Forkop.AvailableMethods.GLOBAL_CHECK,
+      Nazzhub.AvailableMethods.GLOBAL_CHECK,
       [],
       '/usr/bin/nazzhub',
       { timeout: 60000 },

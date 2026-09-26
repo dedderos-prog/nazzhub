@@ -44,7 +44,7 @@ reject_runtime_pattern "Current sing-box config hash:" \
   "sing-box config logs must not emit duplicate hash lines"
 reject_runtime_pattern "Temporary sing-box config hash:" \
   "sing-box config logs must not emit duplicate hash lines"
-reject_runtime_pattern "Forkop did not reach a stable running state after start" \
+reject_runtime_pattern "Nazzhub did not reach a stable running state after start" \
   "startup rollback logs must not be fatal secondary errors"
 reject_runtime_pattern "Flush nft" \
   "stop logs must not expose routine nft cleanup as user-facing info"

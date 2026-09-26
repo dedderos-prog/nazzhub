@@ -8,7 +8,7 @@ vi.mock('../../../helpers', () => ({
   executeShellCommand: mocks.executeShellCommand,
 }));
 
-import { Forkop } from '../../types';
+import { Nazzhub } from '../../types';
 import { store } from '../store.service';
 import {
   getCachedRuntimeUiState,
@@ -19,10 +19,10 @@ import {
 function createUiState(
   status = 'running & enabled',
   running = 1,
-): Forkop.UiState {
+): Nazzhub.UiState {
   return {
     service: {
-      forkop: {
+      nazzhub: {
         running,
         enabled: 1,
         status,
@@ -78,9 +78,9 @@ describe('refreshRuntimeUiState', () => {
       timeout: 3000,
     });
     expect(store.get().servicesInfoWidget.data).toMatchObject({
-      forkopRunning: 0,
-      forkopEnabled: 1,
-      forkopStatus: 'stopped but enabled',
+      nazzhubRunning: 0,
+      nazzhubEnabled: 1,
+      nazzhubStatus: 'stopped but enabled',
     });
   });
 

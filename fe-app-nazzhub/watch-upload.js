@@ -20,26 +20,26 @@ const syncDirs = [
   {
     local: path.resolve(
       process.env.LOCAL_DIR_FE ??
-        '../luci-app-forkop/htdocs/luci-static/resources/view/forkop',
+        '../luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub',
     ),
     remote:
-      process.env.REMOTE_DIR_FE ?? '/www/luci-static/resources/view/forkop',
+      process.env.REMOTE_DIR_FE ?? '/www/luci-static/resources/view/nazzhub',
   },
   {
     local: path.resolve(
-      process.env.LOCAL_DIR_BIN ?? '../forkop/files/usr/bin/',
+      process.env.LOCAL_DIR_BIN ?? '../nazzhub/files/usr/bin/',
     ),
     remote: process.env.REMOTE_DIR_BIN ?? '/usr/bin/',
   },
   {
     local: path.resolve(
-      process.env.LOCAL_DIR_LIB ?? '../forkop/files/usr/lib/',
+      process.env.LOCAL_DIR_LIB ?? '../nazzhub/files/usr/lib/',
     ),
-    remote: process.env.REMOTE_DIR_LIB ?? '/usr/lib/forkop/',
+    remote: process.env.REMOTE_DIR_LIB ?? '/usr/lib/nazzhub/',
   },
   {
     local: path.resolve(
-      process.env.LOCAL_DIR_INIT ?? '../forkop/files/etc/init.d/',
+      process.env.LOCAL_DIR_INIT ?? '../nazzhub/files/etc/init.d/',
     ),
     remote: process.env.REMOTE_DIR_INIT ?? '/etc/init.d/',
   },

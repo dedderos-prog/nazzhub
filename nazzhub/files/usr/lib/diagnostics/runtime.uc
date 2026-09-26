@@ -7,41 +7,41 @@ let uci_core = require("core.uci");
 let runtime_dns = require("singbox.dns");
 let netstat = require("core.netstat");
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || constants.FORKOP_CONFIG_NAME || "forkop";
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
-const FORKOP_VERSION = getenv("FORKOP_VERSION") || constants.FORKOP_VERSION || "";
-const FORKOP_CONFIG = getenv("FORKOP_CONFIG") || constants.FORKOP_CONFIG || "/etc/config/" + CONFIG_NAME;
-const FORKOP_SERVICE_NAME = getenv("FORKOP_SERVICE_NAME") || constants.FORKOP_SERVICE_NAME || "forkop";
-const FORKOP_RELEASE_REPO = getenv("FORKOP_RELEASE_REPO") || constants.FORKOP_RELEASE_REPO || "dedderos-prog/nazzhub";
-const FORKOP_LUCI_VIEW_DIR = getenv("FORKOP_LUCI_VIEW_DIR") || constants.FORKOP_LUCI_VIEW_DIR || "/www/luci-static/resources/view/forkop";
-const RUNTIME_STATE_DIR = getenv("FORKOP_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
-const SYSTEM_INFO_CACHE_FILE = getenv("FORKOP_SYSTEM_INFO_CACHE_FILE") || RUNTIME_STATE_DIR + "/system-info.json";
-const SYSTEM_INFO_CACHE_TTL = int(getenv("FORKOP_SYSTEM_INFO_CACHE_TTL") || "3600");
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || constants.NAZZHUB_CONFIG_NAME || "nazzhub";
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
+const NAZZHUB_VERSION = getenv("NAZZHUB_VERSION") || constants.NAZZHUB_VERSION || "";
+const NAZZHUB_CONFIG = getenv("NAZZHUB_CONFIG") || constants.NAZZHUB_CONFIG || "/etc/config/" + CONFIG_NAME;
+const NAZZHUB_SERVICE_NAME = getenv("NAZZHUB_SERVICE_NAME") || constants.NAZZHUB_SERVICE_NAME || "nazzhub";
+const NAZZHUB_RELEASE_REPO = getenv("NAZZHUB_RELEASE_REPO") || constants.NAZZHUB_RELEASE_REPO || "dedderos-prog/nazzhub";
+const NAZZHUB_LUCI_VIEW_DIR = getenv("NAZZHUB_LUCI_VIEW_DIR") || constants.NAZZHUB_LUCI_VIEW_DIR || "/www/luci-static/resources/view/nazzhub";
+const RUNTIME_STATE_DIR = getenv("NAZZHUB_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
+const SYSTEM_INFO_CACHE_FILE = getenv("NAZZHUB_SYSTEM_INFO_CACHE_FILE") || RUNTIME_STATE_DIR + "/system-info.json";
+const SYSTEM_INFO_CACHE_TTL = int(getenv("NAZZHUB_SYSTEM_INFO_CACHE_TTL") || "3600");
 const TMP_SING_BOX_FOLDER = getenv("TMP_SING_BOX_FOLDER") || constants.TMP_SING_BOX_FOLDER || "/tmp/sing-box";
 const TMP_RULESET_FOLDER = getenv("TMP_RULESET_FOLDER") || constants.TMP_RULESET_FOLDER || TMP_SING_BOX_FOLDER + "/rulesets";
 const TMP_SUBSCRIPTION_FOLDER = getenv("TMP_SUBSCRIPTION_FOLDER") || constants.TMP_SUBSCRIPTION_FOLDER || TMP_SING_BOX_FOLDER + "/subscriptions";
-const SECTION_CACHE_DIR = getenv("FORKOP_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
+const SECTION_CACHE_DIR = getenv("NAZZHUB_SECTION_CACHE_DIR") || RUNTIME_STATE_DIR + "/section-cache";
 const CHECK_PROXY_IP_DOMAIN = getenv("CHECK_PROXY_IP_DOMAIN") || constants.CHECK_PROXY_IP_DOMAIN || "ip.podkop.fyi";
 const FAKEIP_TEST_DOMAIN = getenv("FAKEIP_TEST_DOMAIN") || constants.FAKEIP_TEST_DOMAIN || "fakeip.podkop.fyi";
-const RT_TABLE_NAME = getenv("RT_TABLE_NAME") || constants.RT_TABLE_NAME || "forkop";
-const NFT_TABLE_NAME = getenv("NFT_TABLE_NAME") || constants.NFT_TABLE_NAME || "ForkopTable";
+const RT_TABLE_NAME = getenv("RT_TABLE_NAME") || constants.RT_TABLE_NAME || "nazzhub";
+const NFT_TABLE_NAME = getenv("NFT_TABLE_NAME") || constants.NFT_TABLE_NAME || "NazzhubTable";
 const NFT_FAKEIP_MARK = getenv("NFT_FAKEIP_MARK") || constants.NFT_FAKEIP_MARK || "0x04000000";
-const NFT_COMMON_SET_NAME = getenv("NFT_COMMON_SET_NAME") || constants.NFT_COMMON_SET_NAME || "forkop_subnets";
-const NFT_PORT_SET_NAME = getenv("NFT_PORT_SET_NAME") || constants.NFT_PORT_SET_NAME || "forkop_ports";
-const NFT_IP_PORT_SET_NAME = getenv("NFT_IP_PORT_SET_NAME") || constants.NFT_IP_PORT_SET_NAME || "forkop_ip_ports";
-const NFT_INTERFACE_SET_NAME = getenv("NFT_INTERFACE_SET_NAME") || constants.NFT_INTERFACE_SET_NAME || "forkop_interfaces";
-const NFT_DISCORD_SET_NAME = getenv("NFT_DISCORD_SET_NAME") || constants.NFT_DISCORD_SET_NAME || "forkop_discord_subnets";
+const NFT_COMMON_SET_NAME = getenv("NFT_COMMON_SET_NAME") || constants.NFT_COMMON_SET_NAME || "nazzhub_subnets";
+const NFT_PORT_SET_NAME = getenv("NFT_PORT_SET_NAME") || constants.NFT_PORT_SET_NAME || "nazzhub_ports";
+const NFT_IP_PORT_SET_NAME = getenv("NFT_IP_PORT_SET_NAME") || constants.NFT_IP_PORT_SET_NAME || "nazzhub_ip_ports";
+const NFT_INTERFACE_SET_NAME = getenv("NFT_INTERFACE_SET_NAME") || constants.NFT_INTERFACE_SET_NAME || "nazzhub_interfaces";
+const NFT_DISCORD_SET_NAME = getenv("NFT_DISCORD_SET_NAME") || constants.NFT_DISCORD_SET_NAME || "nazzhub_discord_subnets";
 const NFT_LOCALV4_SET_NAME = getenv("NFT_LOCALV4_SET_NAME") || constants.NFT_LOCALV4_SET_NAME || "localv4";
 const SB_DNS_INBOUND_ADDRESS = getenv("SB_DNS_INBOUND_ADDRESS") || constants.SB_DNS_INBOUND_ADDRESS || "127.0.0.42";
 const SB_TPROXY_INBOUND6_ADDRESS = getenv("SB_TPROXY_INBOUND6_ADDRESS") || constants.SB_TPROXY_INBOUND6_ADDRESS || "::1";
 const SB_TPROXY_INBOUND_PORT = getenv("SB_TPROXY_INBOUND_PORT") || constants.SB_TPROXY_INBOUND_PORT || "1602";
 const SB_CLASH_API_CONTROLLER_PORT = getenv("SB_CLASH_API_CONTROLLER_PORT") || constants.SB_CLASH_API_CONTROLLER_PORT || "9090";
 const SB_VARIANT_STATE_FILE = getenv("SB_VARIANT_STATE_FILE") || constants.SB_VARIANT_STATE_FILE || "/etc/nazzhub/sing-box-variant";
-const SING_BOX_BIN_PATH = getenv("FORKOP_DIAGNOSTICS_SING_BOX_BIN_PATH") || "/usr/bin/sing-box";
+const SING_BOX_BIN_PATH = getenv("NAZZHUB_DIAGNOSTICS_SING_BOX_BIN_PATH") || "/usr/bin/sing-box";
 const CLOUDFLARE_OCTETS = getenv("CLOUDFLARE_OCTETS") || constants.CLOUDFLARE_OCTETS || "8.47 162.159 188.114";
 const ZAPRET_LEGACY_DEFAULT_NFQWS_OPT = getenv("ZAPRET_LEGACY_DEFAULT_NFQWS_OPT") || constants.ZAPRET_LEGACY_DEFAULT_NFQWS_OPT || "";
 const DEFAULT_LATENCY_TEST_URL = getenv("DEFAULT_LATENCY_TEST_URL") || "https://www.gstatic.com/generate_204";
-const RUNTIME_STABLE_MIN_AGE = getenv("FORKOP_RUNTIME_STABLE_MIN_AGE") || "2";
+const RUNTIME_STABLE_MIN_AGE = getenv("NAZZHUB_RUNTIME_STABLE_MIN_AGE") || "2";
 
 const STATUS_UC = LIB_DIR + "/diagnostics/status.uc";
 const HELPERS_UC = LIB_DIR + "/core/helpers.uc";
@@ -374,7 +374,7 @@ function nolog(message) {
 
 function log_message(message, level) {
     level = as_string(level || "info");
-    command_success_from_args([ "logger", "-t", "forkop", "[" + level + "] " + as_string(message) ]);
+    command_success_from_args([ "logger", "-t", "nazzhub", "[" + level + "] " + as_string(message) ]);
 }
 
 function valid_ipv4(value) {
@@ -853,7 +853,7 @@ function check_logs() {
         nolog("Error: logread command not found");
         return 1;
     }
-    let rendered = status_capture([ "forkop-logs" ], command_output_from_args([ "logread" ]));
+    let rendered = status_capture([ "nazzhub-logs" ], command_output_from_args([ "logread" ]));
     if (rendered.output != "")
         print(rendered.output);
     if (rendered.status != 0) {
@@ -878,8 +878,8 @@ function check_sing_box_logs() {
     return 0;
 }
 
-function forkop_logs_fixture() {
-    let rendered = status_capture([ "forkop-logs" ], read_stdin());
+function nazzhub_logs_fixture() {
+    let rendered = status_capture([ "nazzhub-logs" ], read_stdin());
     if (rendered.output != "")
         print(rendered.output);
     return rendered.status;
@@ -902,19 +902,19 @@ function show_sing_box_config(visibility) {
 
 function show_config(visibility) {
     visibility = as_string(visibility || "masked");
-    if (!file_exists(FORKOP_CONFIG)) {
+    if (!file_exists(NAZZHUB_CONFIG)) {
         nolog("Configuration file not found");
         return 1;
     }
     if (visibility == "raw")
-        print(as_string(fs.readfile(FORKOP_CONFIG)));
+        print(as_string(fs.readfile(NAZZHUB_CONFIG)));
     else
-        print(status_output([ "forkop-config-masked", FORKOP_CONFIG ], null));
+        print(status_output([ "nazzhub-config-masked", NAZZHUB_CONFIG ], null));
     return 0;
 }
 
 function show_version() {
-    print(FORKOP_VERSION, "\n");
+    print(NAZZHUB_VERSION, "\n");
     return 0;
 }
 
@@ -924,14 +924,14 @@ function show_sing_box_version() {
 }
 
 function get_luci_app_version() {
-    let path = FORKOP_LUCI_VIEW_DIR + "/main.js";
+    let path = NAZZHUB_LUCI_VIEW_DIR + "/main.js";
     let data = fs.readfile(path);
     if (data == null)
         return "not installed";
 
     for (let line in split(as_string(data), "\n")) {
         let matched = match(line, /^[ \t]*var[ \t]+([^ \t=]+)[ \t]*=[ \t]*"([^"]*)"/);
-        if (matched != null && matched[1] == "FORKOP_LUCI_APP_VERSION")
+        if (matched != null && matched[1] == "NAZZHUB_LUCI_APP_VERSION")
             return as_string(matched[2]);
     }
     return "";
@@ -945,7 +945,7 @@ function system_info_cache_is_valid() {
     let generated_at = arg_number(cache.generated_at || 0);
     if (now > 0 && generated_at > 0 && SYSTEM_INFO_CACHE_TTL > 0 && now - generated_at >= SYSTEM_INFO_CACHE_TTL)
         return false;
-    return cache.forkop_version == FORKOP_VERSION && cache.luci_app_version == get_luci_app_version();
+    return cache.nazzhub_version == NAZZHUB_VERSION && cache.luci_app_version == get_luci_app_version();
 }
 
 function ensure_subscription_runtime_dirs() {
@@ -1039,7 +1039,7 @@ function openwrt_release() {
 }
 
 function build_system_info() {
-    let forkop_latest_version = first_line_value("/tmp/nazzhub.latest-version.cache", "unknown");
+    let nazzhub_latest_version = first_line_value("/tmp/nazzhub.latest-version.cache", "unknown");
     let luci_app_version = get_luci_app_version();
     let sing_box_version = "";
     let sing_box_version_output = "";
@@ -1073,8 +1073,8 @@ function build_system_info() {
     let device_model = first_line_value("/tmp/sysinfo/model", "unknown");
 
     return {
-        forkop_version: FORKOP_VERSION,
-        forkop_latest_version: forkop_latest_version || "unknown",
+        nazzhub_version: NAZZHUB_VERSION,
+        nazzhub_latest_version: nazzhub_latest_version || "unknown",
         luci_app_version,
         sing_box_version,
         sing_box_extended: flags.extended,
@@ -1133,7 +1133,7 @@ function get_server_capabilities() {
 }
 
 function neutralize_zapret_defaults() {
-    log_message("Standalone zapret is not neutralized automatically; Forkop uses /opt/zapret/nfq/nfqws as an external provider and manages only its own NFQUEUE range.", "info");
+    log_message("Standalone zapret is not neutralized automatically; Nazzhub uses /opt/zapret/nfq/nfqws as an external provider and manages only its own NFQUEUE range.", "info");
     return 0;
 }
 
@@ -1157,8 +1157,8 @@ function write_service_status(running, enabled, dns_configured) {
     });
 }
 
-function dnsmasq_has_forkop_dns() {
-    return module_success(DNS_APPLY_UC, [ "has-forkop-dns" ]);
+function dnsmasq_has_nazzhub_dns() {
+    return module_success(DNS_APPLY_UC, [ "has-nazzhub-dns" ]);
 }
 
 function get_sing_box_status() {
@@ -1167,17 +1167,17 @@ function get_sing_box_status() {
         RUNTIME_STABLE_MIN_AGE
     ]) ? 1 : 0;
     let enabled = file_executable("/etc/rc.d/S99sing-box") ? 1 : 0;
-    let dns_configured = dnsmasq_has_forkop_dns() ? 1 : 0;
+    let dns_configured = dnsmasq_has_nazzhub_dns() ? 1 : 0;
     write_service_status(running, enabled, dns_configured);
     return 0;
 }
 
 function get_status() {
     let running = module_success(SERVICE_STATE_UC, [
-        "forkop-stably-running", RT_TABLE_NAME, NFT_TABLE_NAME, NFT_FAKEIP_MARK, RUNTIME_STABLE_MIN_AGE
+        "nazzhub-stably-running", RT_TABLE_NAME, NFT_TABLE_NAME, NFT_FAKEIP_MARK, RUNTIME_STABLE_MIN_AGE
     ]) ? 1 : 0;
-    let enabled = file_executable("/etc/rc.d/S99" + FORKOP_SERVICE_NAME) ? 1 : 0;
-    let dns_configured = dnsmasq_has_forkop_dns() ? 1 : 0;
+    let enabled = file_executable("/etc/rc.d/S99" + NAZZHUB_SERVICE_NAME) ? 1 : 0;
+    let dns_configured = dnsmasq_has_nazzhub_dns() ? 1 : 0;
     write_service_status(running, enabled, dns_configured);
     return 0;
 }
@@ -1833,7 +1833,7 @@ function global_check(arg1, arg2) {
         print_global("❌ Failed to get NFT rules info");
 
     print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    print_global("📄 Forkop config");
+    print_global("📄 Nazzhub config");
     show_config(visibility);
 
     print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -1875,20 +1875,20 @@ function global_check(arg1, arg2) {
 
     if (file_executable("/etc/init.d/zapret") && command_success_from_args([ "/etc/init.d/zapret", "status" ])) {
         print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        print_global("⚠️ Standalone zapret service is active. Forkop uses separate queues, but packet-level policy overlap is possible.");
+        print_global("⚠️ Standalone zapret service is active. Nazzhub uses separate queues, but packet-level policy overlap is possible.");
     }
     else if (file_executable("/etc/init.d/zapret") && command_success_from_args([ "/etc/init.d/zapret", "enabled" ])) {
         print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        print_global("⚠️ Standalone zapret autostart is enabled. Forkop will not modify /etc/config/zapret.");
+        print_global("⚠️ Standalone zapret autostart is enabled. Nazzhub will not modify /etc/config/zapret.");
     }
 
     if (file_executable("/etc/init.d/zapret2") && command_success_from_args([ "/etc/init.d/zapret2", "status" ])) {
         print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        print_global("⚠️ Standalone zapret2 service is active. Forkop uses separate queues, but packet-level policy overlap is possible.");
+        print_global("⚠️ Standalone zapret2 service is active. Nazzhub uses separate queues, but packet-level policy overlap is possible.");
     }
     else if (file_executable("/etc/init.d/zapret2") && command_success_from_args([ "/etc/init.d/zapret2", "enabled" ])) {
         print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        print_global("⚠️ Standalone zapret2 autostart is enabled. Forkop will not modify /etc/config/zapret2.");
+        print_global("⚠️ Standalone zapret2 autostart is enabled. Nazzhub will not modify /etc/config/zapret2.");
     }
 
     print_global("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -1922,8 +1922,8 @@ else if (mode == "check-logs")
     exit(check_logs());
 else if (mode == "check-sing-box-logs")
     exit(check_sing_box_logs());
-else if (mode == "forkop-logs-fixture")
-    exit(forkop_logs_fixture());
+else if (mode == "nazzhub-logs-fixture")
+    exit(nazzhub_logs_fixture());
 else if (mode == "check-fakeip")
     exit(check_fakeip());
 else if (mode == "check-zapret-runtime")

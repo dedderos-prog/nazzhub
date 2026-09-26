@@ -97,8 +97,8 @@ grep -Fq 'require("core.uci")' "$ACTION_UC" ||
 if grep -n -E 'require\("uci"\)\.cursor|uci -q|uci", "-q"|command_exists\("uci"\)' "$ACTION_UC" >/dev/null 2>&1; then
   fail "components/action.uc must not own direct UCI cursor or CLI calls"
 fi
-grep -Fq 'forkop_status_running_with_timeout()' "$ACTION_UC" ||
-  fail "components/action.uc must use bounded Forkop status checks for component actions"
+grep -Fq 'nazzhub_status_running_with_timeout()' "$ACTION_UC" ||
+  fail "components/action.uc must use bounded Nazzhub status checks for component actions"
 grep -Fq 'restore_sing_box_after_failed_package_install' "$ACTION_UC" ||
   fail "stable and tiny sing-box package installs must restore the previous variant after validation failures"
 grep -Fq 'let package_spec = package_name + "=" + package_version;' "$ACTION_UC" ||
@@ -109,15 +109,15 @@ grep -Fq '!file_exists("/etc/init.d/sing-box") && file_nonempty("/usr/bin/sing-b
   fail "binary rollback must restore a managed sing-box service when the package script is missing"
 grep -Fq 'fail_package_sing_box_install(action, tiny, "package was installed, but sing-box binary is not available"' "$ACTION_UC" ||
   fail "stable and tiny sing-box binary validation failures must use transactional rollback"
-grep -Fq 'fail_package_sing_box_install(action, tiny, "was installed, but Forkop did not start cleanly"' "$ACTION_UC" ||
+grep -Fq 'fail_package_sing_box_install(action, tiny, "was installed, but Nazzhub did not start cleanly"' "$ACTION_UC" ||
   fail "stable and tiny sing-box startup failures must use transactional rollback"
 if grep -Fq 'command_success_from_args([ SERVICE_INIT, "status" ])' "$ACTION_UC"; then
   fail "components/action.uc must not call init.d status without a timeout"
 fi
-status_timeout_line="$(grep -n '^function forkop_status_running_with_timeout()' "$ACTION_UC" | cut -d: -f1)"
-capture_state_line="$(grep -n '^function capture_forkop_running_state()' "$ACTION_UC" | cut -d: -f1)"
+status_timeout_line="$(grep -n '^function nazzhub_status_running_with_timeout()' "$ACTION_UC" | cut -d: -f1)"
+capture_state_line="$(grep -n '^function capture_nazzhub_running_state()' "$ACTION_UC" | cut -d: -f1)"
 [ -n "$status_timeout_line" ] && [ -n "$capture_state_line" ] && [ "$status_timeout_line" -lt "$capture_state_line" ] ||
-  fail "components/action.uc must declare bounded status helper before capture_forkop_running_state for OpenWrt ucode"
+  fail "components/action.uc must declare bounded status helper before capture_nazzhub_running_state for OpenWrt ucode"
 init_line="$(grep -n '^function init_tmp_dir()' "$ACTION_UC" | cut -d: -f1)"
 tmp_file_line="$(grep -n '^function make_tmp_file' "$ACTION_UC" | cut -d: -f1)"
 [ -n "$init_line" ] && [ -n "$tmp_file_line" ] && [ "$init_line" -lt "$tmp_file_line" ] ||
@@ -142,7 +142,7 @@ assert_eq "extracted payload" "$(cat "$command_success_output")" \
 
 awk '
 prev2 == "    remove_file(archive_file);" &&
-prev1 == "    stop_forkop_before_sing_box_change();" &&
+prev1 == "    stop_nazzhub_before_sing_box_change();" &&
 $0 == "    let new_version = validate_sing_box_extended_binary(tmp_binary, tmp_dir);" {
   safe_validation = 1
 }
@@ -159,7 +159,7 @@ if grep -Fq 'fs.rename(tmp_binary, "/usr/bin/sing-box")' "$ACTION_UC"; then
 fi
 grep -Fq 'let backup_on_tmpfs = previous_variant == "extended-compressed";' "$ACTION_UC" ||
   fail "package sing-box installs must move compressed backups off overlay before opkg space checks"
-grep -Fq 'backup_binary = backup_on_tmpfs ? tmp_dir + "/sing-box.forkop-backup"' "$ACTION_UC" ||
+grep -Fq 'backup_binary = backup_on_tmpfs ? tmp_dir + "/sing-box.nazzhub-backup"' "$ACTION_UC" ||
   fail "compressed sing-box backup must use tmpfs while installing a package variant"
 grep -Fq 'return move_file_portable(backup_binary, "/usr/bin/sing-box");' "$ACTION_UC" &&
   fail "portable sing-box restore must preserve executable permissions explicitly"
@@ -245,9 +245,9 @@ chmod +x "$package_runtime_bin/opkg" "$package_runtime_bin/logger"
 set +e
 PATH="$package_runtime_bin:$PATH" \
 NAZZHUB_LIB="$package_runtime_lib" \
-FORKOP_RUNTIME_STATE_DIR="$WORK_DIR/package-runtime" \
-NAZZHUB_BIN="$WORK_DIR/missing-forkop" \
-FORKOP_SERVICE_INIT="$WORK_DIR/missing-init" \
+NAZZHUB_RUNTIME_STATE_DIR="$WORK_DIR/package-runtime" \
+NAZZHUB_BIN="$WORK_DIR/missing-nazzhub" \
+NAZZHUB_SERVICE_INIT="$WORK_DIR/missing-init" \
 FAKE_OPKG_LOG="$WORK_DIR/opkg.log" \
 FAKE_OPKG_UPDATED="$WORK_DIR/opkg.updated" \
 ucode -L "$package_runtime_lib" "$ACTION_UC" component-action sing_box install_stable >/dev/null
@@ -289,9 +289,9 @@ chmod +x "$package_runtime_bin/apk"
 set +e
 PATH="$package_runtime_bin:$PATH" \
 NAZZHUB_LIB="$package_runtime_lib" \
-FORKOP_RUNTIME_STATE_DIR="$WORK_DIR/apk-package-runtime" \
-NAZZHUB_BIN="$WORK_DIR/missing-forkop" \
-FORKOP_SERVICE_INIT="$WORK_DIR/missing-init" \
+NAZZHUB_RUNTIME_STATE_DIR="$WORK_DIR/apk-package-runtime" \
+NAZZHUB_BIN="$WORK_DIR/missing-nazzhub" \
+NAZZHUB_SERVICE_INIT="$WORK_DIR/missing-init" \
 FAKE_APK_LOG="$WORK_DIR/apk.log" \
 ucode -L "$package_runtime_lib" "$ACTION_UC" component-action sing_box install_stable >/dev/null
 set -e
@@ -306,7 +306,7 @@ release_json="$(cat <<'JSON'
   "tag_name": "1.2.3",
   "html_url": "https://example.com/release",
   "assets": [
-    {"name": "forkop_1.2.3.ipk", "browser_download_url": "https://example.com/backend.ipk"},
+    {"name": "nazzhub_1.2.3.ipk", "browser_download_url": "https://example.com/backend.ipk"},
     {"name": "luci-app-nazzhub_1.2.3.ipk", "browser_download_url": "https://example.com/app.ipk"},
     {"name": "luci-i18n-nazzhub-ru_1.2.3.ipk", "browser_download_url": "https://example.com/i18n.ipk"}
   ]
@@ -314,39 +314,39 @@ release_json="$(cat <<'JSON'
 JSON
 )"
 
-assert_eq "$(printf 'https://example.com/release\tforkop_1.2.3.ipk\thttps://example.com/backend.ipk\tluci-app-nazzhub_1.2.3.ipk\thttps://example.com/app.ipk\tluci-i18n-nazzhub-ru_1.2.3.ipk\thttps://example.com/i18n.ipk')" \
-  "$(printf '%s' "$release_json" | ucode "$UPDATER" forkop-release-plan 1.2.3 ipk 1)" \
-  "forkop release plan with i18n"
-assert_eq "$(printf 'https://example.com/release\tforkop_1.2.3.ipk\thttps://example.com/backend.ipk\tluci-app-nazzhub_1.2.3.ipk\thttps://example.com/app.ipk\t\t')" \
-  "$(printf '%s' "$release_json" | ucode "$UPDATER" forkop-release-plan 1.2.3 ipk 0)" \
-  "forkop release plan without i18n"
-if printf '%s' "$release_json" | ucode "$UPDATER" forkop-release-plan 9.9.9 ipk 0 >/dev/null 2>&1; then
-  fail "forkop release plan should reject tag mismatch"
+assert_eq "$(printf 'https://example.com/release\tnazzhub_1.2.3.ipk\thttps://example.com/backend.ipk\tluci-app-nazzhub_1.2.3.ipk\thttps://example.com/app.ipk\tluci-i18n-nazzhub-ru_1.2.3.ipk\thttps://example.com/i18n.ipk')" \
+  "$(printf '%s' "$release_json" | ucode "$UPDATER" nazzhub-release-plan 1.2.3 ipk 1)" \
+  "nazzhub release plan with i18n"
+assert_eq "$(printf 'https://example.com/release\tnazzhub_1.2.3.ipk\thttps://example.com/backend.ipk\tluci-app-nazzhub_1.2.3.ipk\thttps://example.com/app.ipk\t\t')" \
+  "$(printf '%s' "$release_json" | ucode "$UPDATER" nazzhub-release-plan 1.2.3 ipk 0)" \
+  "nazzhub release plan without i18n"
+if printf '%s' "$release_json" | ucode "$UPDATER" nazzhub-release-plan 9.9.9 ipk 0 >/dev/null 2>&1; then
+  fail "nazzhub release plan should reject tag mismatch"
 fi
 missing_i18n_json="$(cat <<'JSON'
 {
   "tag_name": "1.2.3",
   "html_url": "https://example.com/release",
   "assets": [
-    {"name": "forkop_1.2.3.ipk", "browser_download_url": "https://example.com/backend.ipk"},
+    {"name": "nazzhub_1.2.3.ipk", "browser_download_url": "https://example.com/backend.ipk"},
     {"name": "luci-app-nazzhub_1.2.3.ipk", "browser_download_url": "https://example.com/app.ipk"}
   ]
 }
 JSON
 )"
-if printf '%s' "$missing_i18n_json" | ucode "$UPDATER" forkop-release-plan 1.2.3 ipk 1 >/dev/null 2>&1; then
-  fail "forkop release plan should require i18n asset when requested"
+if printf '%s' "$missing_i18n_json" | ucode "$UPDATER" nazzhub-release-plan 1.2.3 ipk 1 >/dev/null 2>&1; then
+  fail "nazzhub release plan should require i18n asset when requested"
 fi
 
-ucode "$UPDATER" forkop-release-version-valid 1.2.3 ||
-  fail "three-part Forkop release version should be valid"
+ucode "$UPDATER" nazzhub-release-version-valid 1.2.3 ||
+  fail "three-part Nazzhub release version should be valid"
 for invalid_version in v1.2.3 1.2 1.2.3.4 1.2.3-1 1.2.3-r1; do
-  if ucode "$UPDATER" forkop-release-version-valid "$invalid_version" >/dev/null 2>&1; then
-    fail "invalid Forkop release version was accepted: $invalid_version"
+  if ucode "$UPDATER" nazzhub-release-version-valid "$invalid_version" >/dev/null 2>&1; then
+    fail "invalid Nazzhub release version was accepted: $invalid_version"
   fi
 done
-assert_eq "-1" "$(ucode "$UPDATER" forkop-release-version-compare 1.2.3 1.2.4)" \
-  "three-part Forkop release version comparison"
+assert_eq "-1" "$(ucode "$UPDATER" nazzhub-release-version-compare 1.2.3 1.2.4)" \
+  "three-part Nazzhub release version comparison"
 
 assert_eq "1.13.14-extended-2.5.0" \
   "$(printf 'sing-box version 1.13.14-extended-2.5.0\n\nEnvironment: go1.26.4 linux/amd64\n' | ucode "$UPDATER" stdin-first-line-last-field)" \

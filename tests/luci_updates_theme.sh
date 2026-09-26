@@ -2,8 +2,8 @@
 set -eo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE_STYLES="$ROOT_DIR/fe-app-nazzhub/src/forkop/tabs/updates/styles.ts"
-BUNDLE="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/forkop/main.js"
+SOURCE_STYLES="$ROOT_DIR/fe-app-nazzhub/src/nazzhub/tabs/updates/styles.ts"
+BUNDLE="$ROOT_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/main.js"
 
 fail() {
   printf 'FAIL: %s\n' "$1" >&2

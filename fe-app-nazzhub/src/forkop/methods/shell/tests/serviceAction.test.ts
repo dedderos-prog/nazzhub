@@ -8,9 +8,9 @@ vi.mock('../../../../helpers', () => ({
   executeShellCommand: mocks.executeShellCommand,
 }));
 
-import { ForkopShellMethods } from '../index';
+import { NazzhubShellMethods } from '../index';
 
-describe('ForkopShellMethods.serviceAction', () => {
+describe('NazzhubShellMethods.serviceAction', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mocks.executeShellCommand.mockReset();
@@ -44,7 +44,7 @@ describe('ForkopShellMethods.serviceAction', () => {
       });
     });
 
-    const responsePromise = ForkopShellMethods.waitServiceActionJob('job-1');
+    const responsePromise = NazzhubShellMethods.waitServiceActionJob('job-1');
 
     await vi.advanceTimersByTimeAsync(1000);
 
@@ -72,7 +72,7 @@ describe('ForkopShellMethods.serviceAction', () => {
     });
 
     await expect(
-      ForkopShellMethods.serviceActionStart('restart'),
+      NazzhubShellMethods.serviceActionStart('restart'),
     ).resolves.toEqual({
       success: false,
       error: 'Another service action is already running',

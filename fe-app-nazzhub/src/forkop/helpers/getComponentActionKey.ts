@@ -1,11 +1,11 @@
 import type { StoreType } from '../services/store.service';
-import type { Forkop } from '../types';
+import type { Nazzhub } from '../types';
 
 export type UpdatesActionKey = keyof StoreType['updatesActions'];
 
 const componentActionKeyMap: Record<string, UpdatesActionKey> = {
-  'forkop:check_update': 'forkopCheck',
-  'forkop:install': 'forkopInstall',
+  'nazzhub:check_update': 'nazzhubCheck',
+  'nazzhub:install': 'nazzhubInstall',
   'sing_box:check_update': 'singBoxCheck',
   'sing_box:install': 'singBoxInstall',
   'sing_box:install_extended': 'singBoxInstallExtended',
@@ -24,8 +24,8 @@ const componentActionKeyMap: Record<string, UpdatesActionKey> = {
 };
 
 export function getComponentActionKey(
-  component: Forkop.ComponentName,
-  action: Forkop.ComponentAction,
+  component: Nazzhub.ComponentName,
+  action: Nazzhub.ComponentAction,
 ): UpdatesActionKey | undefined {
   return componentActionKeyMap[`${component}:${action}`];
 }

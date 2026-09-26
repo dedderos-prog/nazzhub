@@ -303,13 +303,13 @@ else if (mode == "restore")
     exit(dnsmasq_restore(ARGV[1]) ? 0 : 1);
 else if (mode == "failsafe-restore")
     exit(failsafe_restore() ? 0 : 1);
-else if (mode == "has-nazzhub-dns" || mode == "has-forkop-dns")
+else if (mode == "has-nazzhub-dns" || mode == "has-nazzhub-dns")
     exit(dnsmasq_has_NAZZHUB_dns() ? 0 : 1);
 else if (mode == "has-managed-state")
     exit(dnsmasq_has_NAZZHUB_managed_state() ? 0 : 1);
 else if (mode == "default-config-complete")
     exit(dnsmasq_default_config_is_complete() ? 0 : 1);
 
-warn("Usage: dns/apply.uc <configure|restore|failsafe-restore|has-nazzhub-dns" || mode == "has-forkop-dns|has-managed-state|default-config-complete>\n");
+warn("Usage: dns/apply.uc <configure|restore|failsafe-restore|has-nazzhub-dns" || mode == "has-nazzhub-dns|has-managed-state|default-config-complete>\n");
 exit(1);
 

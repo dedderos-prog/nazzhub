@@ -59,7 +59,7 @@ UCODE
 
 cat >"$fake_lib/components/action.uc" <<'UCODE'
 #!/usr/bin/env ucode
-let component = ARGV[1] || "forkop";
+let component = ARGV[1] || "nazzhub";
 let action = ARGV[2] || "check_update";
 print(sprintf("%J\n", {
     success: true,
@@ -90,8 +90,8 @@ updates_ucode() {
   TEST_COMPONENT_UPDATE_CHECK_ENABLED="${TEST_COMPONENT_UPDATE_CHECK_ENABLED:-1}" \
     TEST_COMPONENT_UPDATE_CHECK_INTERVAL="${TEST_COMPONENT_UPDATE_CHECK_INTERVAL:-1d}" \
     NAZZHUB_LIB="$fake_lib" \
-    FORKOP_COMPONENT_UPDATE_CHECK_CACHE_DIR="$cache_dir" \
-    FORKOP_COMPONENT_UPDATE_CHECK_STATE_FILE="$timestamp_file" \
+    NAZZHUB_COMPONENT_UPDATE_CHECK_CACHE_DIR="$cache_dir" \
+    NAZZHUB_COMPONENT_UPDATE_CHECK_STATE_FILE="$timestamp_file" \
     UPDATES_JOB_DIR="$job_dir" \
     ucode -L "$fake_lib" -L "$NAZZHUB_LIB" "$UPDATES_UC" "$@"
 }
@@ -117,8 +117,8 @@ TEST_COMPONENT_UPDATE_CHECK_ENABLED=0 updates_ucode \
 
 rm -f "$state_file" "$timestamp_file"
 updates_ucode component-updates-if-due
-[ -s "$cache_dir/forkop.json" ] ||
-  fail "automatic checks must cache the Forkop result"
+[ -s "$cache_dir/nazzhub.json" ] ||
+  fail "automatic checks must cache the Nazzhub result"
 [ -s "$timestamp_file" ] ||
   fail "automatic checks must record their last run"
 

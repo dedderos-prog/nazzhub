@@ -24,7 +24,7 @@ fail() {
 [ ! -e "$SING_BOX_RUNTIME_SH" ] ||
   fail "sing_box_runtime.sh shell owner must be removed"
 grep -Fq '#!/usr/bin/ucode' "$NAZZHUB_BIN" ||
-  fail "forkop entrypoint must be a direct ucode executable"
+  fail "nazzhub entrypoint must be a direct ucode executable"
 grep -Fq 'service/lifecycle.uc' "$CLI_UC" ||
   fail "service/cli.uc must dispatch lifecycle orchestration through service/lifecycle.uc"
 grep -Fq 'singbox/runtime.uc' "$LIFECYCLE_UC" ||
@@ -54,7 +54,7 @@ if grep -n -E 'require\("uci"\)\.cursor|uci -q|uci", "-q"' "$SINGBOX_GENERATOR_U
 fi
 grep -Fq 'require("core.uci")' "$SINGBOX_GENERATOR_UC" ||
   fail "singbox/generator.uc must import core.uci"
-grep -Fq 'FORKOP_RULE_CONDITION_CACHE_DIR' "$LIFECYCLE_UC" ||
+grep -Fq 'NAZZHUB_RULE_CONDITION_CACHE_DIR' "$LIFECYCLE_UC" ||
   fail "service/lifecycle.uc must pass rule-condition cache dir through module environment"
 if awk '
 /"write-current-reload-state-clean"|"write-captured-reload-state"/ {
@@ -150,7 +150,7 @@ generate_config_with_subscription_cache() {
 
   mkdir -p "$output.section-cache" "$output.rulesets"
   TMP_SUBSCRIPTION_FOLDER="$WORK_DIR/subscriptions" \
-    FORKOP_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/persistent-subscription-cache" \
+    NAZZHUB_PERSISTENT_SUBSCRIPTION_CACHE_DIR="$WORK_DIR/persistent-subscription-cache" \
     ucode -L "$NAZZHUB_LIB" "$NAZZHUB_LIB/singbox/generator.uc" generate-config-fixture \
       "$fixture" "$output" "127.0.0.1" "0" "$supports_xhttp"
 }
@@ -210,20 +210,20 @@ grep -Fq 'deferred_sections' "$SINGBOX_RUNTIME_UC" ||
   fail "singbox/runtime.uc must preserve deferred sections for generator input"
 
 cat >"$WORK_DIR/generator-uci.state" <<'EOF_UCI'
-forkop.settings=settings
-forkop.settings.dns_server=1.1.1.1
-forkop.settings.bootstrap_dns_server=1.1.1.1
-forkop.settings.config_path=/tmp/sing-box/config.json
-forkop.settings.cache_path=/tmp/sing-box/cache.db
-forkop.settings.log_level=warn
-forkop.uci_proxy=section
-forkop.uci_proxy.enabled=1
-forkop.uci_proxy.action=connection
-forkop.uci_proxy.outbound_jsons={"type":"direct"}
-forkop.uci_proxy.domain_suffix=example.org
+nazzhub.settings=settings
+nazzhub.settings.dns_server=1.1.1.1
+nazzhub.settings.bootstrap_dns_server=1.1.1.1
+nazzhub.settings.config_path=/tmp/sing-box/config.json
+nazzhub.settings.cache_path=/tmp/sing-box/cache.db
+nazzhub.settings.log_level=warn
+nazzhub.uci_proxy=section
+nazzhub.uci_proxy.enabled=1
+nazzhub.uci_proxy.action=connection
+nazzhub.uci_proxy.outbound_jsons={"type":"direct"}
+nazzhub.uci_proxy.domain_suffix=example.org
 EOF_UCI
-FORKOP_UCI_STATE_FILE="$WORK_DIR/generator-uci.state" \
-  FORKOP_SECTION_CACHE_DIR="$WORK_DIR/generated-from-uci.section-cache" \
+NAZZHUB_UCI_STATE_FILE="$WORK_DIR/generator-uci.state" \
+  NAZZHUB_SECTION_CACHE_DIR="$WORK_DIR/generated-from-uci.section-cache" \
   ucode -L "$NAZZHUB_LIB" "$SINGBOX_GENERATOR_UC" generate-config "$WORK_DIR/generated-from-uci.json" "127.0.0.1" "0"
 grep -Fq '"example.org"' "$WORK_DIR/generated-from-uci.json" ||
   fail "singbox/generator.uc must read section matchers from core.uci"
@@ -966,7 +966,7 @@ cat >"$WORK_DIR/subscriptions/grouped-subscription-1.json" <<'JSON'
       "interval": "10m",
       "tolerance": 50,
       "remark": "Provider Group",
-      "__forkop_allow_group": true
+      "__nazzhub_allow_group": true
     },
     {
       "type": "vless",
@@ -975,7 +975,7 @@ cat >"$WORK_DIR/subscriptions/grouped-subscription-1.json" <<'JSON'
       "server_port": 443,
       "uuid": "00000000-0000-4000-8000-000000000001",
       "tls": { "enabled": true, "server_name": "example.com" },
-      "__forkop_hidden": true
+      "__nazzhub_hidden": true
     },
     {
       "type": "vless",
@@ -984,7 +984,7 @@ cat >"$WORK_DIR/subscriptions/grouped-subscription-1.json" <<'JSON'
       "server_port": 443,
       "uuid": "00000000-0000-4000-8000-000000000002",
       "tls": { "enabled": true, "server_name": "example.org" },
-      "__forkop_hidden": true
+      "__nazzhub_hidden": true
     },
     {
       "type": "direct",
@@ -1011,7 +1011,7 @@ cat >"$WORK_DIR/subscriptions/xhttp-subscription-1.json" <<'JSON'
       "default": "xhttp-node",
       "url": "https://www.gstatic.com/generate_204",
       "remark": "Provider XHTTP Group",
-      "__forkop_allow_group": true
+      "__nazzhub_allow_group": true
     },
     {
       "type": "vless",
@@ -1021,7 +1021,7 @@ cat >"$WORK_DIR/subscriptions/xhttp-subscription-1.json" <<'JSON'
       "server_port": 443,
       "uuid": "00000000-0000-4000-8000-000000000010",
       "transport": { "type": "xhttp" },
-      "__forkop_hidden": true
+      "__nazzhub_hidden": true
     },
     {
       "type": "socks",
@@ -1029,7 +1029,7 @@ cat >"$WORK_DIR/subscriptions/xhttp-subscription-1.json" <<'JSON'
       "remark": "Plain node",
       "server": "127.0.0.11",
       "server_port": 1080,
-      "__forkop_hidden": true
+      "__nazzhub_hidden": true
     },
     {
       "type": "socks",

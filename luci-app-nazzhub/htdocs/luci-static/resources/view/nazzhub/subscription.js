@@ -5,7 +5,7 @@
 "require uci";
 "require view.nazzhub.main as main";
 
-const UCI_PACKAGE = main.FORKOP_UCI_PACKAGE;
+const UCI_PACKAGE = main.NAZZHUB_UCI_PACKAGE || main.NAZZHUB_UCI_PACKAGE || "nazzhub";
 const TARGET_SECTION_NAME = "Main";
 
 function getActiveSubscriptionSectionId() {
@@ -22,7 +22,7 @@ function getActiveSubscriptionSectionId() {
   return sid;
 }
 
-function createSubscriptionContent(section, forkopMap) {
+function createSubscriptionContent(section, nazzhubMap) {
   // 1. Welcome & Info Banner
   let o = section.option(form.DummyValue, "_welcome_banner");
   o.rawhtml = true;
@@ -185,18 +185,20 @@ function createSubscriptionContent(section, forkopMap) {
       .save()
       .then(() => uci.apply())
       .then(() => {
+        const shellMethods = main.NAZZHUBShellMethods || main.NazzhubShellMethods;
         if (
-          main.ForkopShellMethods &&
-          typeof main.ForkopShellMethods.subscriptionUpdateStart === "function"
+          shellMethods &&
+          typeof shellMethods.subscriptionUpdateStart === "function"
         ) {
-          return main.ForkopShellMethods.subscriptionUpdateStart(TARGET_SECTION_NAME);
+          return shellMethods.subscriptionUpdateStart(TARGET_SECTION_NAME);
         }
         return Promise.resolve({ success: true });
       })
       .then((res) => {
+        const shellMethods = main.NAZZHUBShellMethods || main.NazzhubShellMethods;
         if (res && res.success && res.data && res.data.job_id) {
-          if (typeof main.ForkopShellMethods.waitSubscriptionUpdateJob === "function") {
-            return main.ForkopShellMethods.waitSubscriptionUpdateJob(res.data.job_id);
+          if (shellMethods && typeof shellMethods.waitSubscriptionUpdateJob === "function") {
+            return shellMethods.waitSubscriptionUpdateJob(res.data.job_id);
           }
         }
         return res;

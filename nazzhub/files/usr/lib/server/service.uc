@@ -5,7 +5,7 @@ let core_ip = require("core.ip");
 let core_url = require("core.url");
 let uci = require("core.uci");
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || "forkop";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || "nazzhub";
 
 function as_string(value) {
     return value == null ? "" : "" + value;
@@ -46,7 +46,7 @@ function output(command) {
 
 function log(message, level) {
     level = as_string(level || "info");
-    run("logger -t " + shell_quote("forkop") + " " + shell_quote("[" + level + "] " + as_string(message)));
+    run("logger -t " + shell_quote("nazzhub") + " " + shell_quote("[" + level + "] " + as_string(message)));
 }
 
 function fatal(message) {
@@ -968,7 +968,7 @@ function prepare_server_defaults(section) {
     if (protocol == "tailscale") {
         let safe_name = safe_filename_string(section);
         server_default_set_option(section, "tailscale_control_url", "https://controlplane.tailscale.com");
-        server_default_set_option(section, "tailscale_hostname", "forkop-" + safe_name);
+        server_default_set_option(section, "tailscale_hostname", "nazzhub-" + safe_name);
         server_default_set_option(section, "tailscale_advertise_exit_node", "1");
     }
 

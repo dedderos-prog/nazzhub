@@ -8,9 +8,9 @@ vi.mock('../../../../helpers', () => ({
   executeShellCommand: mocks.executeShellCommand,
 }));
 
-import { ForkopShellMethods } from '../index';
+import { NazzhubShellMethods } from '../index';
 
-describe('ForkopShellMethods.subscriptionUpdate', () => {
+describe('NazzhubShellMethods.subscriptionUpdate', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mocks.executeShellCommand.mockReset();
@@ -55,7 +55,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     await expect(
-      ForkopShellMethods.subscriptionUpdateStart('main'),
+      NazzhubShellMethods.subscriptionUpdateStart('main'),
     ).resolves.toEqual({
       success: true,
       data: {
@@ -66,7 +66,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     const responsePromise =
-      ForkopShellMethods.waitSubscriptionUpdateJob('job-1');
+      NazzhubShellMethods.waitSubscriptionUpdateJob('job-1');
 
     await vi.advanceTimersByTimeAsync(1500);
 
@@ -102,7 +102,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     await expect(
-      ForkopShellMethods.subscriptionUpdateStart('main'),
+      NazzhubShellMethods.subscriptionUpdateStart('main'),
     ).resolves.toEqual({
       success: false,
       error: 'Subscription update is already running',
@@ -134,7 +134,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     const responsePromise =
-      ForkopShellMethods.waitSubscriptionUpdateJob('job-1');
+      NazzhubShellMethods.waitSubscriptionUpdateJob('job-1');
 
     await vi.advanceTimersByTimeAsync(1500);
 
@@ -189,7 +189,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     const responsePromise =
-      ForkopShellMethods.waitSubscriptionUpdateJob('job-1');
+      NazzhubShellMethods.waitSubscriptionUpdateJob('job-1');
 
     await vi.advanceTimersByTimeAsync(10 * 60 * 1000 + 3000);
 
@@ -239,7 +239,7 @@ describe('ForkopShellMethods.subscriptionUpdate', () => {
     });
 
     const responsePromise =
-      ForkopShellMethods.waitSubscriptionUpdateJob('job-1');
+      NazzhubShellMethods.waitSubscriptionUpdateJob('job-1');
 
     await vi.advanceTimersByTimeAsync(3000);
 

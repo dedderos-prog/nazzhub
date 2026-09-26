@@ -117,7 +117,7 @@ if grep -Rqs 'require("fs")' "$NAZZHUB_LIB"; then
   require_package_dependency "ucode-mod-fs"
 fi
 
-if grep -Rqs 'forkop_dnsmasq_failsafe_restore_raw' \
+if grep -Rqs 'nazzhub_dnsmasq_failsafe_restore_raw' \
   "$ROOT_DIR/nazzhub/files/usr/bin" \
   "$ROOT_DIR/nazzhub/files/usr/lib" \
   "$ROOT_DIR/nazzhub/files/etc/init.d"; then

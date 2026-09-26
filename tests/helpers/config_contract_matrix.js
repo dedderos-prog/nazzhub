@@ -157,17 +157,17 @@ function extractUi(repo, fields) {
     "view",
     "nazzhub",
   );
-  const forkopViewDir = path.join(
+  const nazzhubViewDir = path.join(
     repo,
-    "luci-app-forkop",
+    "luci-app-nazzhub",
     "htdocs",
     "luci-static",
     "resources",
     "view",
-    "forkop",
+    "nazzhub",
   );
   const legacyViewDir = path.join(repo, legacyAppDir, "htdocs", "luci-static", "resources", "view", legacyStem);
-  const viewDir = fs.existsSync(nazzhubViewDir) ? nazzhubViewDir : (fs.existsSync(forkopViewDir) ? forkopViewDir : legacyViewDir);
+  const viewDir = fs.existsSync(nazzhubViewDir) ? nazzhubViewDir : (fs.existsSync(nazzhubViewDir) ? nazzhubViewDir : legacyViewDir);
   const files = walkFiles(viewDir).filter((file) => file.endsWith(".js"));
 
   for (const file of files) {
@@ -215,9 +215,9 @@ function extractUi(repo, fields) {
 
 function extractConfigDefaults(repo, fields) {
   const nazzhubFile = path.join(repo, "nazzhub", "files", "etc", "config", "nazzhub");
-  const forkopFile = path.join(repo, "forkop", "files", "etc", "config", "forkop");
+  const nazzhubFile = path.join(repo, "nazzhub", "files", "etc", "config", "nazzhub");
   const legacyFile = path.join(repo, legacyStem, "files", "etc", "config", legacyStem);
-  const file = fs.existsSync(nazzhubFile) ? nazzhubFile : (fs.existsSync(forkopFile) ? forkopFile : legacyFile);
+  const file = fs.existsSync(nazzhubFile) ? nazzhubFile : (fs.existsSync(nazzhubFile) ? nazzhubFile : legacyFile);
   const data = readFileIfExists(file);
   for (const line of data.split(/\n/)) {
     const match = line.match(/^\s*(#\s*)?(option|list)\s+([A-Za-z0-9_]+)\s+['"]?([^'"]*)/);
@@ -231,7 +231,7 @@ function extractConfigDefaults(repo, fields) {
 function extractBackend(repo, fields) {
   const backendRoot = fs.existsSync(path.join(repo, "nazzhub"))
     ? "nazzhub"
-    : (fs.existsSync(path.join(repo, "forkop")) ? "forkop" : legacyStem);
+    : (fs.existsSync(path.join(repo, "nazzhub")) ? "nazzhub" : legacyStem);
   const roots = [
     path.join(repo, backendRoot, "files", "usr", "lib"),
     path.join(repo, backendRoot, "files", "usr", "bin"),
@@ -239,14 +239,14 @@ function extractBackend(repo, fields) {
   ];
   const files = roots
     .flatMap((root) => walkFiles(root))
-    .filter((file) => /\.(sh|uc)$/.test(file) || ["nazzhub", "forkop", legacyStem].includes(path.basename(file)));
+    .filter((file) => /\.(sh|uc)$/.test(file) || ["nazzhub", "nazzhub", legacyStem].includes(path.basename(file)));
   const installer = path.join(repo, "install.sh");
   if (fs.existsSync(installer)) files.push(installer);
 
   const shellOptionRe = /\bconfig_(?:get|get_bool|list_foreach)\s+\S+\s+(?:"[^"]+"|'[^']+'|\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]+\})\s+["']([A-Za-z0-9_]+)["']/g;
   const ucodeOptionRe = /\b(?:option|list_option|bool_option|int_option)\(\s*[^,\n]+,\s*["']([A-Za-z0-9_]+)["']/g;
   const ucodeStaticOptionKeyArrayRe = /^\s*\[\s*["']([A-Za-z0-9_]+)["']\s*,/gm;
-  const migrationRe = new RegExp(`\\b(?:nazzhub|forkop|${legacyStem})_uci_(?:set_option|set_option_if_missing|delete_option|add_list_unique)\\s+["'$A-Za-z0-9_{}.-]+\\s+["']([A-Za-z0-9_]+)["']`, "g");
+  const migrationRe = new RegExp(`\\b(?:nazzhub|nazzhub|${legacyStem})_uci_(?:set_option|set_option_if_missing|delete_option|add_list_unique)\\s+["'$A-Za-z0-9_{}.-]+\\s+["']([A-Za-z0-9_]+)["']`, "g");
   const ucodeMigrationRe = /\b(?:set_option|set_option_if_missing|delete_option|add_list_unique)\(\s*[^,\n]+,\s*[^,\n]+,\s*["']([A-Za-z0-9_]+)["']/g;
 
   for (const file of files) {

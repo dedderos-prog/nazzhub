@@ -12,17 +12,17 @@ function env(name, fallback) {
     return value == null ? as_string(fallback) : as_string(value);
 }
 
-const CONFIG_NAME = env("FORKOP_CONFIG_NAME", "forkop");
-const RT_TABLES_PATH = env("FORKOP_RT_TABLES", "/etc/iproute2/rt_tables");
-const BIN_PATH = env("FORKOP_BIN", "/usr/bin/nazzhub");
-const INIT_PATH = env("FORKOP_INIT", "/etc/init.d/nazzhub");
-const DNS_APPLY_UC = env("FORKOP_DNS_APPLY_UC", "/usr/lib/nazzhub/dns/apply.uc");
-const SING_BOX_INIT = env("FORKOP_SING_BOX_INIT", "/etc/init.d/sing-box");
-const SING_BOX_BIN = env("FORKOP_SING_BOX_BIN", "/usr/bin/sing-box");
-const SING_BOX_CRONET = env("FORKOP_SING_BOX_CRONET", "/usr/lib/libcronet.so");
-const SING_BOX_MANAGED_MARKER = env("SB_MANAGED_SERVICE_MARKER", "Forkop managed sing-box service for binary variants");
-const PACKAGE_UPGRADE_STATE = env("FORKOP_PACKAGE_UPGRADE_STATE", "/tmp/nazzhub-package-was-running");
-const PACKAGE_TEST_MODE = env("FORKOP_PACKAGE_TEST_MODE", "") != "";
+const CONFIG_NAME = env("NAZZHUB_CONFIG_NAME", "nazzhub");
+const RT_TABLES_PATH = env("NAZZHUB_RT_TABLES", "/etc/iproute2/rt_tables");
+const BIN_PATH = env("NAZZHUB_BIN", "/usr/bin/nazzhub");
+const INIT_PATH = env("NAZZHUB_INIT", "/etc/init.d/nazzhub");
+const DNS_APPLY_UC = env("NAZZHUB_DNS_APPLY_UC", "/usr/lib/nazzhub/dns/apply.uc");
+const SING_BOX_INIT = env("NAZZHUB_SING_BOX_INIT", "/etc/init.d/sing-box");
+const SING_BOX_BIN = env("NAZZHUB_SING_BOX_BIN", "/usr/bin/sing-box");
+const SING_BOX_CRONET = env("NAZZHUB_SING_BOX_CRONET", "/usr/lib/libcronet.so");
+const SING_BOX_MANAGED_MARKER = env("SB_MANAGED_SERVICE_MARKER", "Nazzhub managed sing-box service for binary variants");
+const PACKAGE_UPGRADE_STATE = env("NAZZHUB_PACKAGE_UPGRADE_STATE", "/tmp/nazzhub-package-was-running");
+const PACKAGE_TEST_MODE = env("NAZZHUB_PACKAGE_TEST_MODE", "") != "";
 
 function shell_quote(value) {
     return "'" + replace(as_string(value), /'/g, "'\\''") + "'";
@@ -61,7 +61,7 @@ function remove_rt_tables_entry() {
     let changed = false;
     let lines = [];
     for (let line in split(data, "\n")) {
-        if (index(line, "105 forkop") >= 0) {
+        if (index(line, "105 nazzhub") >= 0) {
             changed = true;
             continue;
         }
@@ -144,7 +144,7 @@ function postinst_restore() {
 }
 
 function luci_cache_globs() {
-    let configured = env("FORKOP_LUCI_CACHE_GLOBS", "");
+    let configured = env("NAZZHUB_LUCI_CACHE_GLOBS", "");
     if (configured != "")
         return split(configured, /[ \t\r\n]+/);
 
@@ -167,7 +167,7 @@ function luci_postinst() {
     if (!PACKAGE_TEST_MODE) {
         if (path_exists("/etc/init.d/rpcd"))
             command_success_from_args([ "/etc/init.d/rpcd", "reload" ]);
-        command_success_from_args([ "logger", "-t", "forkop", "[info] Package defaults applied" ]);
+        command_success_from_args([ "logger", "-t", "nazzhub", "[info] Package defaults applied" ]);
     }
     return true;
 }

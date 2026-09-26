@@ -13,21 +13,21 @@ function constant_value(name, fallback) {
     return value == null ? as_string(fallback) : as_string(value);
 }
 
-const CONFIG_NAME = getenv("FORKOP_CONFIG_NAME") || constant_value("FORKOP_CONFIG_NAME", "forkop");
-const LIB_DIR = getenv("FORKOP_LIB") || "/usr/lib/nazzhub";
-const BIN_PATH = getenv("FORKOP_BIN") || constant_value("FORKOP_BIN", "/usr/bin/nazzhub");
-const SERVICE_INIT = getenv("FORKOP_SERVICE_INIT") || constant_value("FORKOP_SERVICE_INIT", "/etc/init.d/nazzhub");
-const SERVICE_NAME = getenv("FORKOP_SERVICE_NAME") || constant_value("FORKOP_SERVICE_NAME", "forkop");
-const CONFIG_FILE = getenv("FORKOP_CONFIG_FILE") || "/etc/config/" + CONFIG_NAME;
-const RELOAD_LOCK_DIR = getenv("FORKOP_RELOAD_LOCK_DIR") || "/var/run/nazzhub.reload.lock";
-const RUNTIME_STATE_DIR = getenv("FORKOP_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
-const PENDING_RELOAD_FILE = getenv("FORKOP_PENDING_RELOAD_FILE") || RUNTIME_STATE_DIR + "/reload.pending";
-const START_RETRY_FILE = getenv("FORKOP_START_RETRY_FILE") || RUNTIME_STATE_DIR + "/start.retry";
-const START_RETRY_PID_FILE = getenv("FORKOP_START_RETRY_PID_FILE") || RUNTIME_STATE_DIR + "/start-retry.pid";
-const START_RETRY_DELAY_SECONDS = getenv("FORKOP_START_RETRY_DELAY_SECONDS") || "30";
-const SERVICE_TRIGGER_SYNC_FILE = getenv("FORKOP_SERVICE_TRIGGER_SYNC_FILE") || RUNTIME_STATE_DIR + "/service-triggers.sync";
-const INTERNAL_CONFIG_TRIGGER_GUARD = getenv("FORKOP_INTERNAL_CONFIG_TRIGGER_GUARD") || "/var/run/nazzhub.internal-config-change";
-const CONFIG_CHANGE_REASON = getenv("FORKOP_CONFIG_CHANGE_REASON") || "on_config_change";
+const CONFIG_NAME = getenv("NAZZHUB_CONFIG_NAME") || constant_value("NAZZHUB_CONFIG_NAME", "nazzhub");
+const LIB_DIR = getenv("NAZZHUB_LIB") || "/usr/lib/nazzhub";
+const BIN_PATH = getenv("NAZZHUB_BIN") || constant_value("NAZZHUB_BIN", "/usr/bin/nazzhub");
+const SERVICE_INIT = getenv("NAZZHUB_SERVICE_INIT") || constant_value("NAZZHUB_SERVICE_INIT", "/etc/init.d/nazzhub");
+const SERVICE_NAME = getenv("NAZZHUB_SERVICE_NAME") || constant_value("NAZZHUB_SERVICE_NAME", "nazzhub");
+const CONFIG_FILE = getenv("NAZZHUB_CONFIG_FILE") || "/etc/config/" + CONFIG_NAME;
+const RELOAD_LOCK_DIR = getenv("NAZZHUB_RELOAD_LOCK_DIR") || "/var/run/nazzhub.reload.lock";
+const RUNTIME_STATE_DIR = getenv("NAZZHUB_RUNTIME_STATE_DIR") || "/var/run/nazzhub";
+const PENDING_RELOAD_FILE = getenv("NAZZHUB_PENDING_RELOAD_FILE") || RUNTIME_STATE_DIR + "/reload.pending";
+const START_RETRY_FILE = getenv("NAZZHUB_START_RETRY_FILE") || RUNTIME_STATE_DIR + "/start.retry";
+const START_RETRY_PID_FILE = getenv("NAZZHUB_START_RETRY_PID_FILE") || RUNTIME_STATE_DIR + "/start-retry.pid";
+const START_RETRY_DELAY_SECONDS = getenv("NAZZHUB_START_RETRY_DELAY_SECONDS") || "30";
+const SERVICE_TRIGGER_SYNC_FILE = getenv("NAZZHUB_SERVICE_TRIGGER_SYNC_FILE") || RUNTIME_STATE_DIR + "/service-triggers.sync";
+const INTERNAL_CONFIG_TRIGGER_GUARD = getenv("NAZZHUB_INTERNAL_CONFIG_TRIGGER_GUARD") || "/var/run/nazzhub.internal-config-change";
+const CONFIG_CHANGE_REASON = getenv("NAZZHUB_CONFIG_CHANGE_REASON") || "on_config_change";
 
 const DNS_APPLY_UC = LIB_DIR + "/dns/apply.uc";
 const UI_UC = LIB_DIR + "/service/ui.uc";
@@ -299,7 +299,7 @@ function run_pending_reload_if_requested(path, init_script) {
     if (!consume_pending_reload(path))
         return;
 
-    command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Applying pending Forkop reload" ]);
+    command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Applying pending Nazzhub reload" ]);
     system(shell_quote(init_script) + " reload pending >/dev/null 2>&1 1000>&- &");
 }
 
@@ -399,7 +399,7 @@ function restore_dnsmasq_failsafe() {
 }
 
 function begin_external_service_action(action, source, owner_pid) {
-    if (as_string(getenv("FORKOP_UI_ACTION_TRACKED") || "0") == "1")
+    if (as_string(getenv("NAZZHUB_UI_ACTION_TRACKED") || "0") == "1")
         return "";
     if (!file_exists(UI_UC))
         return "";
@@ -476,7 +476,7 @@ function retry_start_on_wan_up(owner_pid) {
     if (action != "restart")
         return 0;
 
-    command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Retrying failed Forkop start after WAN came up" ]);
+    command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Retrying failed Nazzhub start after WAN came up" ]);
     return command_status_from_args([ SERVICE_INIT, "restart", "triggered" ]);
 }
 
@@ -511,7 +511,7 @@ function handle_wan_up(owner_pid) {
     if (action == "reload") {
         clear_start_retry(START_RETRY_FILE);
         cancel_scheduled_start_retry(START_RETRY_PID_FILE);
-        command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Reloading Forkop after monitored WAN came up" ]);
+        command_success_from_args([ "logger", "-t", SERVICE_NAME, "[info] Reloading Nazzhub after monitored WAN came up" ]);
         return command_status_from_args([ SERVICE_INIT, "reload", "badwan_interface_up" ]);
     }
 
@@ -532,7 +532,7 @@ function active_service_action_value() {
 }
 
 function ui_action_tracked() {
-    return as_string(getenv("FORKOP_UI_ACTION_TRACKED") || "0") == "1";
+    return as_string(getenv("NAZZHUB_UI_ACTION_TRACKED") || "0") == "1";
 }
 
 function start_plan_value(reason, owner_pid, settings, bin_ok) {
@@ -561,7 +561,7 @@ function start_plan(reason, owner_pid, settings, bin_ok) {
 }
 
 function start_service(reason, owner_pid) {
-    print("Start Forkop\n");
+    print("Start Nazzhub\n");
     let plan = start_plan_value(reason, owner_pid, uci_settings(), null);
     if (!plan.bin_ok)
         return 1;
@@ -574,7 +574,7 @@ function start_service(reason, owner_pid) {
     else {
         mark_start_retry(START_RETRY_FILE, as_string(reason) == "triggered" ? "wan_retry_failed" : "start_failed");
         schedule_start_retry(START_RETRY_PID_FILE, START_RETRY_DELAY_SECONDS);
-        command_success_from_args([ "logger", "-t", SERVICE_NAME, "[warn] Forkop start failed; scheduled an automatic retry" ]);
+        command_success_from_args([ "logger", "-t", SERVICE_NAME, "[warn] Nazzhub start failed; scheduled an automatic retry" ]);
     }
     finish_external_service_action("start", plan.job_id, status);
     return status;
@@ -696,7 +696,7 @@ function reload_service(reason, owner_pid) {
     if (plan.action != "run")
         return 0;
 
-    let status = command_status(command_from_args([ "env", "FORKOP_UI_ACTION_TRACKED=1", BIN_PATH, "reload", reason ]) + " >/dev/null 2>&1");
+    let status = command_status(command_from_args([ "env", "NAZZHUB_UI_ACTION_TRACKED=1", BIN_PATH, "reload", reason ]) + " >/dev/null 2>&1");
     let finish = reload_finish_value(reason, plan.job_id, status);
     if (finish.sync)
         print("sync\n");

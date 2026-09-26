@@ -1,5 +1,5 @@
 import { getConfigSections } from './getConfigSections';
-import { ClashAPI, Forkop } from '../../types';
+import { ClashAPI, Nazzhub } from '../../types';
 import {
   canUseDirectClashApi,
   getClashHttpUrl,
@@ -7,11 +7,11 @@ import {
   isCopyableProxyLink,
 } from '../../../helpers';
 import { getOutboundTagBySection } from '../../runtimeTags';
-import { ForkopShellMethods } from '../shell';
+import { NazzhubShellMethods } from '../shell';
 
 interface IGetDashboardSectionsResponse {
   success: boolean;
-  data: Forkop.OutboundGroup[];
+  data: Nazzhub.OutboundGroup[];
 }
 
 interface IGetDashboardSectionsOptions {
@@ -27,12 +27,12 @@ type DashboardSectionCache = {
   version?: number;
   section?: string;
   links?: Record<string, string>;
-  outboundMetadata?: Forkop.GetOutboundMetadata;
+  outboundMetadata?: Nazzhub.GetOutboundMetadata;
   urltestGroups?: Record<string, UrlTestCacheGroup>;
   priorityGroups?: Record<string, PriorityCacheGroup>;
   subscriptionMetadata?:
-    | Forkop.SubscriptionMetadata
-    | Forkop.SubscriptionMetadata[];
+    | Nazzhub.SubscriptionMetadata
+    | Nazzhub.SubscriptionMetadata[];
 };
 
 type UrlTestCacheGroup = {
@@ -129,15 +129,15 @@ type ChildType =
 const DASHBOARD_SECTION_CACHE_DIR = '/var/run/nazzhub/section-cache';
 const CLASH_API_FETCH_TIMEOUT_MS = 5000;
 
-function getDisplayName(section: Forkop.ConfigSection) {
+function getDisplayName(section: Nazzhub.ConfigSection) {
   return section.label || section['.name'];
 }
 
-function getSettingsSection(configSections: Forkop.ConfigSection[]) {
+function getSettingsSection(configSections: Nazzhub.ConfigSection[]) {
   return configSections.find((section) => section['.type'] === 'settings');
 }
 
-function getClashApiSecret(configSections: Forkop.ConfigSection[]) {
+function getClashApiSecret(configSections: Nazzhub.ConfigSection[]) {
   return getSettingsSection(configSections)?.yacd_secret_key || '';
 }
 
@@ -146,8 +146,8 @@ function canFetchClashApiDirectly() {
 }
 
 async function getClashApiProxies(
-  configSections: Forkop.ConfigSection[],
-): Promise<Forkop.MethodResponse<ClashAPI.Proxies>> {
+  configSections: Nazzhub.ConfigSection[],
+): Promise<Nazzhub.MethodResponse<ClashAPI.Proxies>> {
   if (canFetchClashApiDirectly()) {
     const secret = getClashApiSecret(configSections);
     const controller = new AbortController();
@@ -175,7 +175,7 @@ async function getClashApiProxies(
     }
   }
 
-  return ForkopShellMethods.getClashApiProxies();
+  return NazzhubShellMethods.getClashApiProxies();
 }
 
 function getListValues(value?: string[] | string) {
@@ -194,25 +194,25 @@ function getListValues(value?: string[] | string) {
 }
 
 function childSections(
-  configSections: Forkop.ConfigSection[],
+  configSections: Nazzhub.ConfigSection[],
   type: ChildType,
 ) {
   return configSections.filter((section) => section['.type'] === type);
 }
 
 function ownedChildSections(
-  parent: Forkop.ConfigSection,
-  children: Forkop.ConfigSection[],
+  parent: Nazzhub.ConfigSection,
+  children: Nazzhub.ConfigSection[],
 ) {
   return children.filter(
-    (section): section is Forkop.ConfigSection =>
+    (section): section is Nazzhub.ConfigSection =>
       section.section === parent['.name'],
   );
 }
 
 function childSectionsByOwner(
-  children: Forkop.ConfigSection[],
-  ownerKey: keyof Forkop.ConfigSection,
+  children: Nazzhub.ConfigSection[],
+  ownerKey: keyof Nazzhub.ConfigSection,
   ownerValue: string,
 ) {
   return children.filter((section) => section[ownerKey] === ownerValue);
@@ -222,7 +222,7 @@ function compactSettingsMap(settings: Record<string, ItemSettings>) {
   return Object.keys(settings).length ? JSON.stringify(settings) : undefined;
 }
 
-function hydrateConfigSections(configSections: Forkop.ConfigSection[]) {
+function hydrateConfigSections(configSections: Nazzhub.ConfigSection[]) {
   const subscriptionUrls = childSections(configSections, 'subscription_url');
   const interfaces = childSections(configSections, 'section_interface');
   const urltests = childSections(configSections, 'urltest');
@@ -234,7 +234,7 @@ function hydrateConfigSections(configSections: Forkop.ConfigSection[]) {
       return section;
     }
 
-    const next: Forkop.ConfigSection = { ...section };
+    const next: Nazzhub.ConfigSection = { ...section };
     const subscriptionUrlItems = ownedChildSections(next, subscriptionUrls);
     const interfaceItems = ownedChildSections(next, interfaces);
     const urltestItems = ownedChildSections(next, urltests);
@@ -349,16 +349,16 @@ function hydrateConfigSections(configSections: Forkop.ConfigSection[]) {
   });
 }
 
-function getManualProxyLinks(section: Forkop.ConfigSection) {
+function getManualProxyLinks(section: Nazzhub.ConfigSection) {
   return getListValues(section.selector_proxy_links);
 }
 
-function getConnectionInterfaces(section: Forkop.ConfigSection) {
+function getConnectionInterfaces(section: Nazzhub.ConfigSection) {
   const values = getListValues(section.interfaces);
   return values.length ? values : getListValues(section.interface);
 }
 
-function getJsonOutbounds(section: Forkop.ConfigSection) {
+function getJsonOutbounds(section: Nazzhub.ConfigSection) {
   const values = getListValues(section.outbound_jsons);
   return values.length ? values : getListValues(section.outbound_json);
 }
@@ -369,27 +369,27 @@ function isConnectionAction(action?: string) {
   );
 }
 
-function hasSubscriptionSources(section: Forkop.ConfigSection) {
+function hasSubscriptionSources(section: Nazzhub.ConfigSection) {
   return getSubscriptionSourceCount(section) > 0;
 }
 
-function getSubscriptionSourceCount(section: Forkop.ConfigSection) {
+function getSubscriptionSourceCount(section: Nazzhub.ConfigSection) {
   return getListValues(section.subscription_urls).length;
 }
 
-function shouldSortByLatency(section: Forkop.ConfigSection) {
+function shouldSortByLatency(section: Nazzhub.ConfigSection) {
   return section.sort_by_latency === '1';
 }
 
-function hasConfiguredUrlTestList(section: Forkop.ConfigSection) {
+function hasConfiguredUrlTestList(section: Nazzhub.ConfigSection) {
   return getListValues(section.urltests).length > 0;
 }
 
-function hasConfiguredPriorityList(section: Forkop.ConfigSection) {
+function hasConfiguredPriorityList(section: Nazzhub.ConfigSection) {
   return getListValues(section.priority_groups).length > 0;
 }
 
-function getUrlTestIds(section: Forkop.ConfigSection) {
+function getUrlTestIds(section: Nazzhub.ConfigSection) {
   const values = getListValues(section.urltests);
   return values.length
     ? values
@@ -398,11 +398,11 @@ function getUrlTestIds(section: Forkop.ConfigSection) {
       : [];
 }
 
-function isUrlTestEnabled(section: Forkop.ConfigSection) {
+function isUrlTestEnabled(section: Nazzhub.ConfigSection) {
   return getUrlTestIds(section).length > 0;
 }
 
-function shouldUseProxyGroup(section: Forkop.ConfigSection) {
+function shouldUseProxyGroup(section: Nazzhub.ConfigSection) {
   return (
     getManualProxyLinks(section).length > 0 ||
     hasSubscriptionSources(section) ||
@@ -413,7 +413,7 @@ function shouldUseProxyGroup(section: Forkop.ConfigSection) {
   );
 }
 
-function getSectionProxyConfigType(section: Forkop.ConfigSection) {
+function getSectionProxyConfigType(section: Nazzhub.ConfigSection) {
   if (hasSubscriptionSources(section)) {
     return 'subscription' as const;
   }
@@ -441,7 +441,7 @@ function getSectionProxyConfigType(section: Forkop.ConfigSection) {
   return undefined;
 }
 
-function getJsonOutboundDisplayName(section: Forkop.ConfigSection) {
+function getJsonOutboundDisplayName(section: Nazzhub.ConfigSection) {
   try {
     const parsedOutbound = JSON.parse(section.outbound_json || '{}');
     return parsedOutbound?.tag ? decodeURIComponent(parsedOutbound.tag) : '';
@@ -450,7 +450,7 @@ function getJsonOutboundDisplayName(section: Forkop.ConfigSection) {
   }
 }
 
-function buildManualLinkByCode(section: Forkop.ConfigSection) {
+function buildManualLinkByCode(section: Nazzhub.ConfigSection) {
   const sectionName = section['.name'];
 
   return new Map(
@@ -469,7 +469,7 @@ function uniqueCodes(codes: string[]) {
   return Array.from(new Set(codes.filter(Boolean)));
 }
 
-function isSelectorOutbound(outbound: Forkop.Outbound) {
+function isSelectorOutbound(outbound: Nazzhub.Outbound) {
   return outbound.type?.toLowerCase() === 'selector';
 }
 
@@ -486,7 +486,7 @@ function getLatencySortValue(outbound: { latency: number }) {
 }
 
 function sortOutboundsForDashboard(
-  outbounds: Forkop.Outbound[],
+  outbounds: Nazzhub.Outbound[],
   options: {
     pinnedCode?: string;
     pinnedCodes?: string[];
@@ -537,7 +537,7 @@ function sortOutboundsForDashboard(
     .map((item) => item.outbound);
 }
 
-function sortUrlTestMembers(outbounds: Forkop.UrlTestMember[]) {
+function sortUrlTestMembers(outbounds: Nazzhub.UrlTestMember[]) {
   return outbounds
     .map((outbound, index) => ({ outbound, index }))
     .sort((left, right) => {
@@ -637,7 +637,7 @@ function getPriorityTag(sectionName: string, id: string) {
 }
 
 function getUrlTestDisplayName(
-  section: Forkop.ConfigSection,
+  section: Nazzhub.ConfigSection,
   id: string,
   settings: ItemSettings | undefined,
 ) {
@@ -648,7 +648,7 @@ function getUrlTestDisplayName(
   );
 }
 
-function getUrlTestConfigs(section: Forkop.ConfigSection): UrlTestConfig[] {
+function getUrlTestConfigs(section: Nazzhub.ConfigSection): UrlTestConfig[] {
   const settingsMap = itemSettingsMap(section.urltest_settings);
   const sectionName = section['.name'];
 
@@ -726,11 +726,11 @@ function priorityLevelConfigsFromSettings(
     );
 }
 
-function getPriorityGroupIds(section: Forkop.ConfigSection) {
+function getPriorityGroupIds(section: Nazzhub.ConfigSection) {
   return getListValues(section.priority_groups);
 }
 
-function getPriorityConfigs(section: Forkop.ConfigSection): PriorityConfig[] {
+function getPriorityConfigs(section: Nazzhub.ConfigSection): PriorityConfig[] {
   const settingsMap = itemSettingsMap(section.priority_group_settings);
   const sectionName = section['.name'];
 
@@ -831,7 +831,7 @@ function getOutboundDisplayName(
   code: string,
   entry: ClashProxyEntry | undefined,
   link: string,
-  outboundMetadata?: Forkop.GetOutboundMetadata,
+  outboundMetadata?: Nazzhub.GetOutboundMetadata,
   preferMetadata = false,
 ) {
   const metadataName = outboundMetadata?.names?.[code];
@@ -862,9 +862,9 @@ function buildUrlTestInfo({
   proxyByCode: Map<string, ClashProxyEntry>;
   manualLinkByCode: Map<string, string>;
   cachedProxyLinks: Map<string, string>;
-  outboundMetadata?: Forkop.GetOutboundMetadata;
+  outboundMetadata?: Nazzhub.GetOutboundMetadata;
   showDetectedCountries: boolean;
-}): Forkop.UrlTestInfo {
+}): Nazzhub.UrlTestInfo {
   const childCodes = uniqueCodes(
     groupCache?.outbounds?.length
       ? groupCache.outbounds
@@ -936,9 +936,9 @@ function buildPriorityInfo({
   proxyByCode: Map<string, ClashProxyEntry>;
   manualLinkByCode: Map<string, string>;
   cachedProxyLinks: Map<string, string>;
-  outboundMetadata?: Forkop.GetOutboundMetadata;
+  outboundMetadata?: Nazzhub.GetOutboundMetadata;
   showDetectedCountries: boolean;
-}): Forkop.PriorityInfo {
+}): Nazzhub.PriorityInfo {
   const selectedCode = entry?.value.now || '';
   const cacheLevels = Array.isArray(groupCache?.levels)
     ? groupCache.levels
@@ -1061,9 +1061,9 @@ function buildPriorityInfo({
 }
 
 function buildProxyGroupOutbounds(
-  section: Forkop.ConfigSection,
+  section: Nazzhub.ConfigSection,
   proxies: ClashProxyEntry[],
-  outboundMetadata?: Forkop.GetOutboundMetadata,
+  outboundMetadata?: Nazzhub.GetOutboundMetadata,
   urltestGroups: Record<string, UrlTestCacheGroup> = {},
   priorityGroups: Record<string, PriorityCacheGroup> = {},
   cachedProxyLinks: Map<string, string> = new Map(),
@@ -1207,9 +1207,9 @@ function buildProxyGroupOutbounds(
 function metadataMatchesCurrentSource(
   sectionName: string,
   sourceCount: number,
-  metadata: Forkop.SubscriptionMetadata,
+  metadata: Nazzhub.SubscriptionMetadata,
 ) {
-  const legacyMetadata = metadata as Forkop.SubscriptionMetadata & {
+  const legacyMetadata = metadata as Nazzhub.SubscriptionMetadata & {
     source_index?: number;
     source_section?: string;
   };
@@ -1261,9 +1261,9 @@ function metadataMatchesCurrentSource(
 function getSubscriptionMetadataSourceIndex(
   sectionName: string,
   sourceCount: number,
-  metadata: Forkop.SubscriptionMetadata,
+  metadata: Nazzhub.SubscriptionMetadata,
 ) {
-  const legacyMetadata = metadata as Forkop.SubscriptionMetadata & {
+  const legacyMetadata = metadata as Nazzhub.SubscriptionMetadata & {
     source_index?: number;
     source_section?: string;
   };
@@ -1286,9 +1286,9 @@ function getSubscriptionMetadataSourceIndex(
 }
 
 function isSubscriptionMetadataVisible(
-  section: Forkop.ConfigSection,
+  section: Nazzhub.ConfigSection,
   sourceCount: number,
-  metadata: Forkop.SubscriptionMetadata,
+  metadata: Nazzhub.SubscriptionMetadata,
 ) {
   const sourceIndex = getSubscriptionMetadataSourceIndex(
     section['.name'],
@@ -1309,7 +1309,7 @@ function isSubscriptionMetadataVisible(
 }
 
 function getSubscriptionMetadata(
-  section: Forkop.ConfigSection,
+  section: Nazzhub.ConfigSection,
   sourceCount: number,
   dashboardCache?: DashboardSectionCache,
 ) {

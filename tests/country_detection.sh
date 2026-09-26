@@ -95,7 +95,7 @@ UCODE
 
 FAKE_COUNTRY_PAYLOAD="$WORK_DIR/payload.json" \
 FAKE_COUNTRY_RESOLVE="$WORK_DIR/resolve.txt" \
-FORKOP_COUNTRY_IS_URL="https://country.invalid/" \
+NAZZHUB_COUNTRY_IS_URL="https://country.invalid/" \
 PATH="$WORK_DIR/bin:$PATH" \
   ucode -L "$NAZZHUB_LIB" "$WORK_DIR/runner.uc"
 
