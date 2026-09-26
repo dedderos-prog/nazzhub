@@ -164,13 +164,13 @@ mkdir -p /usr/bin
 mkdir -p /usr/lib/nazzhub
 
 # Configuration
-if [ ! -f /etc/config/nazzhub ]; then
+if [ ! -f /etc/config/nazzhub ] || [ "$FORCE_CONFIG" = "1" ]; then
     cp "$EXTRACTED_DIR/nazzhub/files/etc/config/nazzhub" /etc/config/nazzhub
     chmod 0644 /etc/config/nazzhub
-    msg "   ✓ Создана начальная конфигурация /etc/config/nazzhub"
+    msg "   ✓ Установлена конфигурация /etc/config/nazzhub"
 else
     cp "$EXTRACTED_DIR/nazzhub/files/etc/config/nazzhub" /etc/config/nazzhub.default
-    msg "   ℹ️ Существующая конфигурация /etc/config/nazzhub сохранена (образец сохранен в .default)"
+    msg "   ℹ️ Существующая конфигурация сохранена (для сброса на дефолты используйте FORCE_CONFIG=1)"
 fi
 
 # Service & CLI
