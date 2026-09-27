@@ -6128,7 +6128,6 @@ function analyzeNfqws2Strategy(value) {
     return localAnalysis;
   }
 
-  const text = value ? `${value}` : "";
   const tokens = parseNfqwsRuntimeTokens(text);
   const annotationMap = new Map();
 
