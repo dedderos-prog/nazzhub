@@ -130,6 +130,16 @@ function show_help() {
     print("                            List available Zapret strategies from collection in JSON\n");
     print("    apply_zapret_strategy <section> <strategy>\n");
     print("                            Apply a Zapret strategy to a configured section\n");
+    print("    zapret2_autodetect [category] [section] [apply]\n");
+    print("                            Auto-detect best working Zapret2 strategy (youtube, discord, gaming, general)\n");
+    print("    zapret2_autodetect_async [category] [section] [apply]\n");
+    print("                            Start Zapret2 strategy auto-detection in the background\n");
+    print("    zapret2_autodetect_status\n");
+    print("                            Get background Zapret2 strategy auto-detection status\n");
+    print("    get_zapret2_strategies [category]\n");
+    print("                            List available Zapret2 strategies in JSON format\n");
+    print("    apply_zapret2_strategy <section> <strategy>\n");
+    print("                            Apply a Zapret2 strategy to a configured section and reload\n");
 }
 
 function command_spec(command) {
@@ -203,6 +213,12 @@ function command_spec(command) {
         zapret_autodetect_status: [ "providers/zapret/autodetect.uc", "autodetect-status", 0 ],
         get_zapret_strategies: [ "providers/zapret/autodetect.uc", "list-strategies", 1 ],
         apply_zapret_strategy: [ "providers/zapret/autodetect.uc", "apply", 2 ],
+        zapret2_autodetect: [ "providers/zapret2/autodetect.uc", "autodetect", 3 ],
+        zapret2_autodetect_async: [ "providers/zapret2/autodetect.uc", "autodetect-async", 3 ],
+        zapret2_autodetect_worker: [ "providers/zapret2/autodetect.uc", "autodetect-worker", 3 ],
+        zapret2_autodetect_status: [ "providers/zapret2/autodetect.uc", "autodetect-status", 0 ],
+        get_zapret2_strategies: [ "providers/zapret2/autodetect.uc", "list-strategies", 1 ],
+        apply_zapret2_strategy: [ "providers/zapret2/autodetect.uc", "apply", 2 ],
         package_prerm: [ "service/package.uc", "prerm", 1 ],
         package_postinst: [ "service/package.uc", "postinst", 0 ],
         luci_postinst: [ "service/package.uc", "luci-postinst", 0 ]

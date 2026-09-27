@@ -7762,8 +7762,8 @@ function openZapretAutodetectModal(sectionId, textarea) {
         label: _("🎮 Gaming & UDP Realtime (--payload=all)"),
       },
       {
-        value: "--filter-tcp=80,443-65535 --out-range=-n8 --lua-desync=send:repeats=2 --lua-desync=syndata:blob=stun --lua-desync=hostfakesplit_multi:hosts=google.com,vimeo.com:tcp_ts=-1000:tcp_md5:repeats=2 --new --filter-udp=443-65535 --payload=all --out-range=-d8 --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
-        label: _("🌐 All TCP & UDP (hostfakesplit_multi + syndata)"),
+        value: "--filter-tcp=80,443-65535 --out-range=-n8 --lua-desync=send:repeats=2 --lua-desync=syndata:blob=stun --lua-desync=hostfakesplit:hosts=google.com,vimeo.com:tcp_ts=-1000:tcp_md5:repeats=2 --new --filter-udp=443-65535 --payload=all --out-range=-d8 --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
+        label: _("🌐 All TCP & UDP (hostfakesplit + syndata)"),
       },
       {
         value: "--filter-tcp=80,443 --filter-l7=tls --payload=tls_client_hello --out-range=-d1000 --in-range=-s5556 --lua-desync=circular:fails=1:time=300:retrans=3:nld=2 --lua-desync=fake:blob=fake_default_tls:strategy=1 --lua-desync=multidisorder:pos=1,midsld:strategy=1 --lua-desync=multisplit:pos=2,midsld-2:seqovl=1:strategy=2 --lua-desync=fake:blob=tls_clienthello_www_google_com:strategy=3:final --new --filter-udp=443-65535 --payload=all --lua-desync=fake:blob=fake_default_quic:repeats=6",

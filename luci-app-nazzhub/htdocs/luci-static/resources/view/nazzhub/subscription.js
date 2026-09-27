@@ -3,6 +3,7 @@
 "require form";
 "require ui";
 "require uci";
+"require fs";
 "require view.nazzhub.main as main";
 
 const UCI_PACKAGE = main.NAZZHUB_UCI_PACKAGE || "nazzhub";
@@ -82,8 +83,8 @@ const ZAPRET2_PRESETS = [
   },
   {
     value:
-      "--filter-tcp=80,443-65535 --out-range=-n8 --lua-desync=send:repeats=2 --lua-desync=syndata:blob=stun --lua-desync=hostfakesplit_multi:hosts=google.com,vimeo.com:tcp_ts=-1000:tcp_md5:repeats=2 --new --filter-udp=443-65535 --payload=all --out-range=-d8 --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
-    label: _("🌐 All TCP & UDP (hostfakesplit_multi + syndata)"),
+      "--filter-tcp=80,443-65535 --out-range=-n8 --lua-desync=send:repeats=2 --lua-desync=syndata:blob=stun --lua-desync=hostfakesplit:hosts=google.com,vimeo.com:tcp_ts=-1000:tcp_md5:repeats=2 --new --filter-udp=443-65535 --payload=all --out-range=-d8 --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
+    label: _("🌐 All TCP & UDP (hostfakesplit + syndata)"),
   },
   {
     value:
@@ -96,6 +97,359 @@ const ZAPRET2_PRESETS = [
     label: _("🛡️ Universal Zapret2 (HTTP + HTTPS + QUIC + Voice)"),
   },
 ];
+
+function showZapret2AutodetectModal() {
+  const zid = getZapret2SectionId();
+  let pollTimer = null;
+  const prevRpcTimeout = L.env.rpctimeout;
+  L.env.rpctimeout = 600;
+
+  const categorySelect = E(
+    "select",
+    {
+      class: "cbi-input-select",
+      style: "width: 100%; margin-bottom: 12px; font-weight: 500;",
+    },
+    [
+      E("option", { value: "youtube", selected: "selected" }, _("YouTube & Google (www.youtube.com)")),
+      E("option", { value: "discord" }, _("Discord (голос, чат, стримы)")),
+      E("option", { value: "gaming" }, _("🎮 Игры & UDP Realtime")),
+      E("option", { value: "general" }, _("🌐 Общие сайты (Rutracker и блокировки)")),
+      E("option", { value: "all" }, _("⚡ Все категории (полное тестирование)"))
+    ]
+  );
+
+  const autoApplyCheckbox = E("input", {
+    type: "checkbox",
+    id: "zapret2_autoapply_cb",
+    checked: true,
+    style: "vertical-align: middle; margin-right: 8px;"
+  });
+
+  const autoApplyLabel = E(
+    "label",
+    { style: "display: block; margin-bottom: 14px; cursor: pointer; font-size: 0.95em;" },
+    [
+      autoApplyCheckbox,
+      _("Автоматически применить лучшую найденную стратегию в Zapret2")
+    ]
+  );
+
+  const statusContainer = E("div", {
+    id: "zapret2_autodetect_status",
+    style: "margin-top: 15px;"
+  });
+
+  const liveTableContainer = E("div", {
+    style: "margin-top: 15px; max-height: 380px; overflow-y: auto;"
+  });
+
+  function applyStrategyToUi(stratText, stratName) {
+    ensureZapret2Section();
+    uci.set(UCI_PACKAGE, zid, "nfqws2_opt", stratText);
+    uci.set(UCI_PACKAGE, zid, "enabled", "1");
+
+    const selectElem = document.querySelector('select[name*="_zapret2_preset"]');
+    if (selectElem) {
+      let optionExists = false;
+      for (let i = 0; i < selectElem.options.length; i++) {
+        if (selectElem.options[i].value.trim() === stratText.trim()) {
+          selectElem.selectedIndex = i;
+          optionExists = true;
+          break;
+        }
+      }
+      if (!optionExists && stratText) {
+        const newOpt = new Option(stratName || "Подобранная стратегия", stratText, true, true);
+        selectElem.add(newOpt);
+      }
+      selectElem.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    fs.exec("/usr/bin/nazzhub", ["apply_zapret2_strategy", zid, stratText]).catch(() => {});
+
+    ui.addNotification(
+      null,
+      E("p", {}, _("✓ Стратегия '") + (stratName || "Zapret2") + _("' успешно применена к секции Zapret2!")),
+      "info"
+    );
+  }
+
+  function updateTable(results, best) {
+    liveTableContainer.innerHTML = "";
+    const table = E("table", { class: "table", style: "width: 100%; font-size: 0.9em; border-collapse: collapse;" }, [
+      E("tr", { class: "tr cbi-section-table-titles", style: "background: rgba(0,0,0,0.04);" }, [
+        E("th", { class: "th", style: "padding: 8px 6px; text-align: left;" }, _("Стратегия")),
+        E("th", { class: "th", style: "padding: 8px 6px; text-align: center; width: 130px;" }, _("Статус")),
+        E("th", { class: "th", style: "padding: 8px 6px; text-align: center; width: 95px;" }, _("Задержка")),
+        E("th", { class: "th", style: "padding: 8px 6px; text-align: center; width: 110px;" }, _("Действие"))
+      ])
+    ]);
+
+    results.forEach((item) => {
+      const isBest = best && best.id === item.id;
+      const isWorking = item.working || (item.code >= 200 && item.code < 500);
+      const latencyMs = item.latency_ms || Math.round((item.time || 0) * 1000);
+
+      const statusBadge = isWorking
+        ? E("span", { class: "badge", style: "background: #28a745; color: #fff; padding: 3px 7px; border-radius: 4px; font-weight: bold; font-size: 0.85em;" }, "🟢 " + item.code + " OK")
+        : E("span", { class: "badge", style: "background: #dc3545; color: #fff; padding: 3px 7px; border-radius: 4px; font-size: 0.85em;" }, item.code ? "🔴 " + item.code + " Error" : _("🔴 DPI Drop"));
+
+      const latencyBadge = isWorking
+        ? E("strong", { style: "color: #2e7d32; font-size: 0.95em;" }, latencyMs + " ms")
+        : E("span", { style: "color: #888;" }, "—");
+
+      const applyBtn = E(
+        "button",
+        {
+          class: "btn cbi-button cbi-button-apply",
+          style: "padding: 2px 8px; font-size: 0.85em; margin: 0;",
+          type: "button",
+          click: function () {
+            applyStrategyToUi(item.strategy, item.name);
+          }
+        },
+        _("Применить")
+      );
+
+      const row = E(
+        "tr",
+        {
+          class: "tr cbi-section-table-row",
+          style: isBest
+            ? "background: rgba(40, 167, 69, 0.12); font-weight: 500;"
+            : (isWorking ? "background: rgba(40, 167, 69, 0.04);" : "")
+        },
+        [
+          E("td", { class: "td", style: "padding: 7px 6px; word-break: break-word;" }, [
+            isBest ? E("span", { style: "margin-right: 4px;" }, "⭐ ") : "",
+            E("span", {}, item.display_name || item.name)
+          ]),
+          E("td", { class: "td", style: "padding: 7px 6px; text-align: center;" }, [statusBadge]),
+          E("td", { class: "td", style: "padding: 7px 6px; text-align: center;" }, [latencyBadge]),
+          E("td", { class: "td", style: "padding: 7px 6px; text-align: center;" }, isWorking ? [applyBtn] : [E("span", { style: "color: #aaa;" }, "—")])
+        ]
+      );
+      table.appendChild(row);
+    });
+
+    liveTableContainer.appendChild(table);
+  }
+
+  function finishAutodetect(payload) {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+    L.env.rpctimeout = prevRpcTimeout;
+    runButton.disabled = false;
+    runButton.textContent = _("⚡ Запустить снова");
+    categorySelect.disabled = false;
+    autoApplyCheckbox.disabled = false;
+
+    if (!payload || !payload.success) {
+      statusContainer.innerHTML = "";
+      statusContainer.appendChild(
+        E("div", { class: "alert-message danger" }, [
+          E("strong", {}, _("Ошибка: ")),
+          payload && payload.message ? payload.message : _("Тестирование завершилось неудачно.")
+        ])
+      );
+      return;
+    }
+
+    const testedResults = payload.results || [];
+    const best = payload.best_strategy;
+    statusContainer.innerHTML = "";
+
+    if (best) {
+      const latencyMs = best.latency_ms || Math.round((best.time || 0) * 1000);
+      statusContainer.appendChild(
+        E("div", {
+          class: "alert-message success",
+          style: "margin-bottom: 12px; padding: 12px 16px; border-left: 5px solid #28a745; background: rgba(40, 167, 69, 0.1);"
+        }, [
+          E("h4", { style: "margin: 0 0 6px 0; color: #1b5e20; font-size: 1.1em;" }, _("🎉 Найдена лучшая рабочая стратегия Zapret2!")),
+          E("div", { style: "margin-bottom: 8px;" }, [
+            _("Стратегия: "),
+            E("strong", { style: "color: #0d47a1;" }, best.display_name || best.name),
+            _(" — Задержка: "),
+            E("strong", { style: "color: #2e7d32;" }, latencyMs + " ms"),
+            " (HTTP " + best.code + ")"
+          ]),
+          payload.applied
+            ? E("div", { style: "color: #1b5e20; font-weight: bold; margin-bottom: 6px;" }, _("✓ Стратегия автоматически применена в Zapret2 и сервис перезапущен."))
+            : E("button", {
+                class: "btn cbi-button cbi-button-apply",
+                style: "font-weight: bold;",
+                type: "button",
+                click: function () {
+                  applyStrategyToUi(best.strategy, best.name);
+                }
+              }, _("✔ Применить эту стратегию"))
+        ])
+      );
+    } else {
+      statusContainer.appendChild(
+        E("div", { class: "alert-message warning", style: "margin-bottom: 12px;" }, [
+          E("strong", {}, _("⚠️ Ни одна из стратегий не смогла обойти блокировку в этой категории.")),
+          E("p", { style: "margin: 6px 0 0 0; font-size: 0.9em;" }, _("Попробуйте категорию 'Все категории' или 'Universal', либо проверьте интернет-соединение."))
+        ])
+      );
+    }
+
+    if (testedResults.length > 0) {
+      liveTableContainer.style.display = "block";
+      updateTable(testedResults, best);
+      statusContainer.appendChild(liveTableContainer);
+    }
+  }
+
+  const runButton = E(
+    "button",
+    {
+      class: "btn cbi-button cbi-button-action",
+      style: "font-size: 1.05em; padding: 6px 16px;",
+      type: "button",
+      click: function () {
+        const selectedCategory = categorySelect.value;
+        const shouldApply = autoApplyCheckbox.checked ? "1" : "0";
+
+        runButton.disabled = true;
+        categorySelect.disabled = true;
+        autoApplyCheckbox.disabled = true;
+        runButton.textContent = _("⏳ Тестирование стратегий...");
+
+        statusContainer.innerHTML = "";
+        liveTableContainer.innerHTML = "";
+
+        const progressHeader = E("div", { style: "margin-bottom: 6px; font-weight: bold;" }, _("Запуск изолированного теста Zapret2..."));
+        const progressDetail = E("div", { style: "margin-bottom: 8px; color: #555; font-size: 0.95em;" }, _("Подготовка стенда на очереди 4399..."));
+        const progressBarInner = E("div", {
+          style: "height: 8px; width: 0%; background: #1e90ff; border-radius: 4px; transition: width 0.3s;"
+        });
+        const progressBar = E("div", {
+          style: "height: 8px; width: 100%; background: #e0e0e0; border-radius: 4px; margin-bottom: 12px; overflow: hidden;"
+        }, [progressBarInner]);
+
+        statusContainer.appendChild(progressHeader);
+        statusContainer.appendChild(progressDetail);
+        statusContainer.appendChild(progressBar);
+        statusContainer.appendChild(liveTableContainer);
+
+        fs.exec("/usr/bin/nazzhub", ["zapret2_autodetect_async", selectedCategory, zid, shouldApply])
+          .then((res) => {
+            let startRes = null;
+            try {
+              startRes = JSON.parse((res && res.stdout ? res.stdout : "{}").trim() || "{}");
+            } catch (e) {
+              startRes = null;
+            }
+
+            if (!startRes || !startRes.success) {
+              return fs.exec("/usr/bin/nazzhub", ["zapret2_autodetect", selectedCategory, zid, shouldApply])
+                .then((syncRes) => {
+                  let payload = null;
+                  try {
+                    payload = JSON.parse((syncRes && syncRes.stdout ? syncRes.stdout : "{}").trim() || "{}");
+                  } catch (e) {
+                    payload = null;
+                  }
+                  finishAutodetect(payload);
+                });
+            }
+
+            pollTimer = setInterval(() => {
+              fs.exec("/usr/bin/nazzhub", ["zapret2_autodetect_status"])
+                .then((statusRes) => {
+                  let state = null;
+                  try {
+                    state = JSON.parse((statusRes && statusRes.stdout ? statusRes.stdout : "{}").trim() || "{}");
+                  } catch (e) {
+                    state = null;
+                  }
+
+                  if (!state) return;
+
+                  if (state.status === "running") {
+                    const cur = state.current || 0;
+                    const total = state.total || 1;
+                    const pct = Math.round((cur / total) * 100);
+                    progressBarInner.style.width = pct + "%";
+                    progressHeader.textContent = _("Тестирование стратегий: ") + cur + " / " + total + " (" + pct + "%)";
+                    progressDetail.textContent = (state.current_name ? _("Текущая: ") + state.current_name : _("Тестирование...")) +
+                      (state.target_domain ? " [" + state.target_domain + " -> " + (state.target_ip || "") + "]" : "");
+                    if (state.results && state.results.length > 0) {
+                      liveTableContainer.style.display = "block";
+                      updateTable(state.results, state.best_strategy);
+                    }
+                  } else if (state.status === "done") {
+                    progressBarInner.style.width = "100%";
+                    finishAutodetect(state);
+                  }
+                })
+                .catch(() => {});
+            }, 800);
+          })
+          .catch((err) => {
+            L.env.rpctimeout = prevRpcTimeout;
+            runButton.disabled = false;
+            categorySelect.disabled = false;
+            autoApplyCheckbox.disabled = false;
+            statusContainer.innerHTML = "";
+            statusContainer.appendChild(
+              E("div", { class: "alert-message danger" }, [
+                E("strong", {}, _("Ошибка запуска: ")),
+                err && err.message ? err.message : String(err)
+              ])
+            );
+          });
+      }
+    },
+    _("⚡ Запустить автоподбор")
+  );
+
+  // Check if there are already cached results to display immediately
+  fs.exec("/usr/bin/nazzhub", ["zapret2_autodetect_status"]).then((res) => {
+    try {
+      const state = JSON.parse((res && res.stdout ? res.stdout : "{}").trim() || "{}");
+      if (state && state.results && state.results.length > 0) {
+        liveTableContainer.style.display = "block";
+        updateTable(state.results, state.best_strategy);
+        statusContainer.appendChild(liveTableContainer);
+      }
+    } catch (e) {}
+  }).catch(() => {});
+
+  const modalBody = E("div", {}, [
+    E("p", { style: "margin-bottom: 12px; color: #444; font-size: 0.95em; line-height: 1.45;" }, [
+      _("Автоподборщик безопасно тестирует каждую стратегию Zapret2 на изолированном сетевом стенде (очередь 4399) без нарушения работы основного интернета роутера, измеряет отклик (latency) и код ответа (HTTP 200).")
+    ]),
+    E("label", { style: "font-weight: bold; display: block; margin-bottom: 4px;" }, _("Категория сервиса:")),
+    categorySelect,
+    autoApplyLabel,
+    E("div", { style: "margin-bottom: 14px;" }, [runButton]),
+    statusContainer
+  ]);
+
+  ui.showModal(_("🔍 Автоподбор стратегий Zapret2"), [
+    modalBody,
+    E("div", { class: "button-row", style: "margin-top: 15px; text-align: right;" }, [
+      E("button", {
+        class: "btn cbi-button cbi-button-neutral",
+        type: "button",
+        click: function () {
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+          L.env.rpctimeout = prevRpcTimeout;
+          ui.hideModal();
+        }
+      }, _("Закрыть"))
+    ])
+  ]);
+}
 
 function createSubscriptionContent(section, nazzhubMap) {
   // 1. Welcome & Info Banner
@@ -459,6 +813,22 @@ function createSubscriptionContent(section, nazzhubMap) {
     if (cleanVal) {
       uci.set(UCI_PACKAGE, zid, "enabled", "1");
     }
+  };
+
+  // 7b. Zapret2 Strategy Autodetector Trigger
+  o = section.option(
+    form.Button,
+    "_zapret2_autodetect_btn",
+    _("Автоподборщик стратегий Zapret2"),
+    _(
+      "Безопасный перебор стратегий Zapret2 на изолированном сетевом стенде (очередь 4399). Тестирует обход DPI для YouTube, Discord и игр с измерением пинга и подбором лучшей рабочей стратегии.",
+    ),
+  );
+  o.inputtitle = _("🔍 Запустить автоподбор стратегии");
+  o.inputstyle = "action";
+  o.onclick = function (ev) {
+    ev.preventDefault();
+    showZapret2AutodetectModal();
   };
 
   // 8. Xbox DNS - DoT Switch
