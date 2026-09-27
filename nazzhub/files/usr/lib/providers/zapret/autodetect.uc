@@ -129,13 +129,7 @@ function list_strategies_command(category) {
 }
 
 function setup_probe_firewall() {
-    system("nft delete table inet " + PROBE_NFT_TABLE + " 2>/dev/null || true");
-    system("nft add table inet " + PROBE_NFT_TABLE + " 2>/dev/null || true");
-    system("nft 'add chain inet " + PROBE_NFT_TABLE + " postnat { type filter hook postrouting priority 102; }' 2>/dev/null || true");
-    system("nft 'add rule inet " + PROBE_NFT_TABLE + " postnat meta nfproto ipv4 tcp dport 443 mark and " + DESYNC_MARK + " == 0 queue num " + PROBE_QUEUE + "' 2>/dev/null || true");
-    system("nft 'add rule inet " + PROBE_NFT_TABLE + " postnat meta nfproto ipv4 udp dport 443 mark and " + DESYNC_MARK + " == 0 queue num " + PROBE_QUEUE + "' 2>/dev/null || true");
-    system("nft 'add chain inet " + PROBE_NFT_TABLE + " predefrag { type filter hook output priority -402; }' 2>/dev/null || true");
-    system("nft 'add rule inet " + PROBE_NFT_TABLE + " predefrag meta nfproto ipv4 mark and " + DESYNC_MARK + " != 0 notrack' 2>/dev/null || true");
+    cleanup_probe_firewall();
 }
 
 function cleanup_probe_firewall() {

@@ -1985,10 +1985,13 @@ install_ui_packages() {
     fi
 }
 
-install_zapret_component() {
-    if [ ! -x /opt/zapret/nfq/nfqws ]; then
-        msg "Installing zapret component by default..."
-        /usr/bin/nazzhub component_action zapret install || warn "Failed to automatically install zapret; you can install it later via LuCI"
+install_zapret2_component() {
+    if ! command -v unzip >/dev/null 2>&1; then
+        pkg_install_name "unzip" 2>/dev/null || true
+    fi
+    if [ ! -x /opt/zapret2/nfq2/nfqws2 ]; then
+        msg "Installing zapret2 component by default..."
+        /usr/bin/nazzhub component_action zapret2 install || warn "Failed to automatically install zapret2; you can install it later via LuCI"
     fi
 }
 
@@ -2041,7 +2044,7 @@ main() {
     migrate_legacy_configuration
     install_ui_packages
     install_selected_sing_box
-    install_zapret_component
+    install_zapret2_component
     install_proton2025_theme
     post_install
 

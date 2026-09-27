@@ -105,6 +105,11 @@ if ! pkg_is_installed luci-i18n-base-ru; then
     pkg_install luci-i18n-base-ru || warn "Не удалось установить luci-i18n-base-ru"
 fi
 
+if ! command -v unzip >/dev/null 2>&1; then
+    msg "📥 Установка unzip..."
+    pkg_install unzip || warn "Не удалось установить unzip"
+fi
+
 # 5. Sing-box installation check
 if ! command -v sing-box >/dev/null 2>&1; then
     msg "📥 sing-box не найден в системе, выполняем установку..."
@@ -216,16 +221,12 @@ if [ -d "$EXTRACTED_DIR/nazzhub/files/opt" ]; then
     msg "   ✓ Установлены файлы fake пакетов в /opt/zapret/files/fake"
 fi
 
-# Zapret auto-installation by default
-if [ ! -x /opt/zapret/nfq/nfqws ]; then
-    msg "📥 zapret не найден в системе, выполняем автоустановку по умолчанию..."
-    /usr/bin/nazzhub component_action zapret install || warn "Автоустановка zapret завершилась с предупреждением (можно установить через LuCI)"
-    if [ -d "$EXTRACTED_DIR/nazzhub/files/opt" ]; then
-        mkdir -p /opt/zapret/files/fake
-        cp -rf "$EXTRACTED_DIR/nazzhub/files/opt/"* /opt/ 2>/dev/null || true
-    fi
+# Zapret2 auto-installation by default
+if [ ! -x /opt/zapret2/nfq2/nfqws2 ]; then
+    msg "📥 zapret2 не найден в системе, выполняем автоустановку по умолчанию..."
+    /usr/bin/nazzhub component_action zapret2 install || warn "Автоустановка zapret2 завершилась с предупреждением (можно установить через LuCI)"
 else
-    msg "   ✓ zapret уже установлен в системе"
+    msg "   ✓ zapret2 уже установлен в системе"
 fi
 
 # 10. Deploy LuCI app files

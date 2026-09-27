@@ -180,7 +180,7 @@ const ZAPRET_DEFAULT_NFQWS_OPT =
   "--filter-udp=443 --dpi-desync=fake --dpi-desync-repeats=6 --new --filter-udp=19294-19344,50000-50100 --filter-l7=discord,stun --dpi-desync=fake --dpi-desync-repeats=6 --new --filter-tcp=443 --ip-id=zero --dpi-desync=fake,fakedsplit --dpi-desync-repeats=6 --dpi-desync-fooling=ts --dpi-desync-fakedsplit-pattern=0x00 --new --filter-tcp=80,2053,2083,2087,2096,8443 --dpi-desync=fake,fakedsplit --dpi-desync-repeats=6 --dpi-desync-fooling=ts --dpi-desync-fakedsplit-pattern=0x00";
 
 const ZAPRET2_DEFAULT_NFQWS2_OPT =
-  "--filter-tcp=80 --filter-l7=http --payload=http_req --lua-desync=fake:blob=fake_default_http:tcp_md5 --lua-desync=multisplit:pos=method+2 --new --filter-tcp=443 --filter-l7=tls --payload=tls_client_hello --lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000 --lua-desync=multidisorder:pos=1,midsld --new --filter-udp=443 --filter-l7=quic --payload=quic_initial --lua-desync=fake:blob=fake_default_quic:repeats=6";
+  "--filter-tcp=80 --filter-l7=http --payload=http_req --lua-desync=fake:blob=fake_default_http:tcp_md5 --lua-desync=multisplit:pos=method+2 --new --filter-tcp=443 --filter-l7=tls --payload=tls_client_hello --lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000 --lua-desync=multidisorder:pos=1,midsld --new --filter-udp=443 --filter-l7=quic --payload=quic_initial --lua-desync=fake:blob=fake_default_quic:repeats=6 --new --filter-udp=19294-19344,50000-65535 --payload=all --lua-desync=fake:blob=fake_default_udp:repeats=6";
 
 const BYEDPI_DEFAULT_CMD_OPTS = "-o 2 --auto=t,r,a,s -d 2";
 const ANNOTATED_TEXTAREA_STYLE_ID = "fkp-annotated-textarea-styles";
@@ -7102,17 +7102,7 @@ function loadZapretStrategies() {
 }
 
 function openZapretAutodetectModal(sectionId, textarea) {
-  let defaultCategory = "youtube";
-  const secName = (sectionId || "").toLowerCase();
-  if (secName.includes("discord")) {
-    defaultCategory = "discord";
-  } else if (
-    secName.includes("general") ||
-    secName.includes("site") ||
-    secName.includes("russia")
-  ) {
-    defaultCategory = "general";
-  }
+  return;
 
   const categorySelect = E(
     "select",
@@ -7628,26 +7618,6 @@ function openZapretAutodetectModal(sectionId, textarea) {
     return node;
   };
 
-  const autodetectBtn = section.taboption(
-    "settings",
-    form.Button,
-    "_zapret_autodetect_btn",
-    _("Auto-detect Strategy"),
-    _(
-      "Probe bypass strategies against your ISP DPI on real traffic and automatically select the fastest working one.",
-    ),
-  );
-  autodetectBtn.depends("action", "zapret");
-  autodetectBtn.inputtitle = _("⚡ Auto-detect Best Strategy");
-  autodetectBtn.inputstyle = "action";
-  autodetectBtn.modalonly = true;
-  autodetectBtn.onclick = function (ev) {
-    ev.preventDefault();
-    const textarea = document.querySelector('textarea[name$="nfqws_opt"]');
-    const sectionId = textarea ? textarea.name.split(".")[2] : "zapret";
-    openZapretAutodetectModal(sectionId, textarea);
-  };
-
   o = section.taboption(
     "settings",
     form.TextValue,
@@ -7694,6 +7664,77 @@ function openZapretAutodetectModal(sectionId, textarea) {
   };
   o.parse = parseNfqwsStrategyOnSave;
   configureTextareaOption(o, analyzeNfqwsStrategy, attachNfqwsRemoteValidation);
+
+  const preset2Opt = section.taboption(
+    "settings",
+    form.ListValue,
+    "_zapret2_preset",
+    _("Zapret2 Strategy Preset"),
+    _(
+      "Choose a proven pre-configured Zapret2 strategy: YouTube, Discord, Gaming, Circular adaptive failover, or Universal.",
+    ),
+  );
+  preset2Opt.depends("action", "zapret2");
+  preset2Opt.modalonly = true;
+  preset2Opt.write = function () {};
+  preset2Opt.remove = function () {};
+  preset2Opt.load = function (section_id) {
+    const choices = [
+      { value: "", label: _("-- Select Zapret2 preset --") },
+      {
+        value: "--filter-tcp=80,443 --filter-l7=tls --payload=tls_client_hello --out-range=-d8 --lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000 --lua-desync=multidisorder:pos=1,midsld --new --filter-udp=443 --filter-l7=quic --payload=quic_initial --out-range=-n8 --lua-desync=fake:blob=fake_default_quic:repeats=6",
+        label: _("YouTube & Google (TLS multidisorder + QUIC fake)"),
+      },
+      {
+        value: "--filter-tcp=80,443,1080,2053,2083,2087,2096,8443 --out-range=-n10 --lua-desync=fake:blob=tls_clienthello_www_google_com:repeats=6:tcp_ts=1000 --lua-desync=multidisorder:pos=1,midsld --new --filter-udp=443,19294-19344,50000-65535 --payload=all --lua-desync=fake:blob=fake_default_udp:repeats=6",
+        label: _("Discord (Voice, Chat, Media)"),
+      },
+      {
+        value: "--filter-tcp=80,443 --filter-l7=tls --payload=tls_client_hello --lua-desync=fake:blob=fake_default_tls:tcp_md5 --lua-desync=multisplit:pos=1,midsld --new --filter-udp=443-65535 --payload=all --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
+        label: _("🎮 Gaming & UDP Realtime (--payload=all)"),
+      },
+      {
+        value: "--filter-tcp=80,443-65535 --out-range=-n8 --lua-desync=send:repeats=2 --lua-desync=syndata:blob=stun --lua-desync=hostfakesplit_multi:hosts=google.com,vimeo.com:tcp_ts=-1000:tcp_md5:repeats=2 --new --filter-udp=443-65535 --payload=all --out-range=-d8 --lua-desync=fake:blob=fake_default_quic:repeats=6:payload=all",
+        label: _("🌐 All TCP & UDP (hostfakesplit_multi + syndata)"),
+      },
+      {
+        value: "--filter-tcp=80,443 --filter-l7=tls --payload=tls_client_hello --out-range=-d1000 --in-range=-s5556 --lua-desync=circular:fails=1:time=300:retrans=3:nld=2 --lua-desync=fake:blob=fake_default_tls:strategy=1 --lua-desync=multidisorder:pos=1,midsld:strategy=1 --lua-desync=multisplit:pos=2,midsld-2:seqovl=1:strategy=2 --lua-desync=fake:blob=tls_clienthello_www_google_com:strategy=3:final --new --filter-udp=443-65535 --payload=all --lua-desync=fake:blob=fake_default_quic:repeats=6",
+        label: _("⚡ Circular (Adaptive Lua auto-failover on RST)"),
+      },
+      {
+        value: "--filter-tcp=80 --filter-l7=http --payload=http_req --lua-desync=fake:blob=fake_default_http:tcp_md5 --lua-desync=multisplit:pos=method+2 --new --filter-tcp=443 --filter-l7=tls --payload=tls_client_hello --lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000 --lua-desync=multidisorder:pos=1,midsld --new --filter-udp=443 --filter-l7=quic --payload=quic_initial --lua-desync=fake:blob=fake_default_quic:repeats=6 --new --filter-udp=19294-19344,50000-65535 --payload=all --lua-desync=fake:blob=fake_default_udp:repeats=6",
+        label: _("🛡️ Universal Zapret2 (HTTP + HTTPS + QUIC + Voice)"),
+      },
+    ];
+    refreshOptionChoices(this, choices);
+    return "";
+  };
+  const origPreset2Render = preset2Opt.renderWidget;
+  preset2Opt.renderWidget = function (section_id, option_index, cfgvalue) {
+    const node = origPreset2Render.call(
+      this,
+      section_id,
+      option_index,
+      cfgvalue,
+    );
+    const select =
+      node && typeof node.querySelector === "function"
+        ? node.querySelector("select")
+        : node;
+    if (select) {
+      select.addEventListener("change", () => {
+        const val = select.value;
+        if (!val) return;
+        const textarea = document.querySelector('textarea[name$="nfqws2_opt"]');
+        if (textarea) {
+          textarea.value = val;
+          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          textarea.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+    }
+    return node;
+  };
 
   o = section.taboption(
     "settings",
