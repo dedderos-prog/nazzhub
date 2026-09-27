@@ -9,17 +9,17 @@
 
 ---
 
-### 🚀 Установка на роутер
+### 🚀 Установка и удаление на роутере
 
-#### Способ 1: Экспресс-тестовая установка напрямую из репозитория (рекомендуется для тестов)
-Не требует предварительной сборки и публикации релизов. Устанавливает актуальные файлы прямо из ветки `main`:
+#### Способ 1: Экспресс-установка и управление напрямую из репозитория (рекомендуется)
+Не требует предварительной сборки и публикации релизов. При запуске предлагает выбор: **1) Установить/обновить**, **2) Полностью удалить**:
 
 ```sh
-sh <(wget -O - https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/install-test.sh)
+sh -c "$(wget -qO- https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/install-test.sh)"
 ```
 *или через `curl`:*
 ```sh
-sh <(curl -fsSL https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/install-test.sh)
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/dedderos-prog/nazzhub/main/install-test.sh)"
 ```
 
 #### Способ 2: Стандартная пакетная установка из GitHub Releases (как в Nazzhub)
