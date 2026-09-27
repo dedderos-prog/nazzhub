@@ -5733,8 +5733,7 @@ function analyzeNfqwsStrategy(value) {
 }
 
 function normalizeNfqws2StrategyValue(value) {
-  const normalized = normalizeNfqwsStrategyWhitespace(value);
-  return normalized.length ? normalized : ZAPRET2_DEFAULT_NFQWS2_OPT;
+  return normalizeNfqwsStrategyWhitespace(value);
 }
 
 function getCachedNfqws2RemoteValidation(value) {
@@ -5993,8 +5992,8 @@ function buildNfqws2LocalAnalysis(value) {
   const text = value ? `${value}` : "";
   if (!text.trim().length) {
     return {
-      valid: false,
-      message: _("NFQWS2 strategy cannot be empty"),
+      valid: true,
+      message: "",
       annotations: [],
     };
   }
@@ -6116,6 +6115,11 @@ function buildNfqws2LocalAnalysis(value) {
 function analyzeNfqws2Strategy(value) {
   const localAnalysis = buildNfqws2LocalAnalysis(value);
   if (!localAnalysis.valid) {
+    return localAnalysis;
+  }
+
+  const text = value ? `${value}` : "";
+  if (!text.trim().length) {
     return localAnalysis;
   }
 
@@ -7566,6 +7570,94 @@ function openZapretAutodetectModal(sectionId, textarea) {
   );
 }
 
+  function attachPresetDropdownHandler(presetOption, targetOptionName, getTargetOption) {
+    function applyPreset(section_id, val) {
+      if (!val) return;
+      const targetOpt = typeof getTargetOption === "function" ? getTargetOption() : null;
+      let textarea = targetOpt ? getOptionTextarea(targetOpt, section_id) : null;
+      if (!textarea) {
+        textarea = document.querySelector(
+          `textarea[name$=".${section_id}.${targetOptionName}"], textarea[id*=".${section_id}.${targetOptionName}"], textarea[name$="${targetOptionName}"], textarea[id*="${targetOptionName}"]`,
+        );
+      }
+      if (textarea) {
+        textarea.value = val;
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        textarea.dispatchEvent(new Event("change", { bubbles: true }));
+        textarea.dispatchEvent(new CustomEvent("widget-change", { bubbles: true }));
+        if (
+          textarea.__nazzhubAnnotatedTextareaController &&
+          typeof textarea.__nazzhubAnnotatedTextareaController.update === "function"
+        ) {
+          try {
+            textarea.__nazzhubAnnotatedTextareaController.update();
+          } catch (e) {}
+        }
+      }
+      if (targetOpt && typeof targetOpt.getUIElement === "function") {
+        try {
+          const uiElem = targetOpt.getUIElement(section_id);
+          if (uiElem && typeof uiElem.setValue === "function") {
+            uiElem.setValue(val);
+          }
+        } catch (e) {}
+      }
+      if (targetOpt && typeof targetOpt.triggerValidation === "function") {
+        try {
+          targetOpt.triggerValidation(section_id);
+        } catch (e) {}
+      }
+    }
+
+    presetOption.onchange = function (ev, section_id, value) {
+      if (value) {
+        applyPreset(section_id, value);
+      }
+    };
+
+    const origRender = presetOption.renderWidget;
+    presetOption.renderWidget = function (section_id, option_index, cfgvalue) {
+      const node = origRender.call(this, section_id, option_index, cfgvalue);
+      if (node) {
+        const handleEvent = (ev) => {
+          let val = "";
+          if (ev && ev.detail && typeof ev.detail.value !== "undefined" && ev.detail.value !== null) {
+            val = `${ev.detail.value}`;
+          } else if (typeof node.getValue === "function") {
+            val = node.getValue();
+          } else if (ev && ev.target && typeof ev.target.getValue === "function") {
+            val = ev.target.getValue();
+          } else {
+            const hidden = node.querySelector('input[type="hidden"]');
+            if (hidden && hidden.value) {
+              val = hidden.value;
+            } else {
+              const sel = node.querySelector("select");
+              if (sel && sel.value) {
+                val = sel.value;
+              } else if (node.value) {
+                val = node.value;
+              }
+            }
+          }
+          if (val) {
+            applyPreset(section_id, val);
+          }
+        };
+
+        node.addEventListener("cbi-dropdown-change", handleEvent);
+        node.addEventListener("widget-change", handleEvent);
+        node.addEventListener("change", handleEvent);
+
+        const sel = node.querySelector("select");
+        if (sel) {
+          sel.addEventListener("change", handleEvent);
+        }
+      }
+      return node;
+    };
+  }
+
   const presetOpt = section.taboption(
     "settings",
     form.ListValue,
@@ -7591,32 +7683,8 @@ function openZapretAutodetectModal(sectionId, textarea) {
       return "";
     });
   };
-  const origPresetRender = presetOpt.renderWidget;
-  presetOpt.renderWidget = function (section_id, option_index, cfgvalue) {
-    const node = origPresetRender.call(
-      this,
-      section_id,
-      option_index,
-      cfgvalue,
-    );
-    const select =
-      node && typeof node.querySelector === "function"
-        ? node.querySelector("select")
-        : node;
-    if (select) {
-      select.addEventListener("change", () => {
-        const val = select.value;
-        if (!val) return;
-        const textarea = document.querySelector('textarea[name$="nfqws_opt"]');
-        if (textarea) {
-          textarea.value = val;
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
-          textarea.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      });
-    }
-    return node;
-  };
+  let nfqwsOpt;
+  attachPresetDropdownHandler(presetOpt, "nfqws_opt", () => nfqwsOpt);
 
   o = section.taboption(
     "settings",
@@ -7624,6 +7692,7 @@ function openZapretAutodetectModal(sectionId, textarea) {
     "nfqws_opt",
     _("NFQWS Strategy"),
   );
+  nfqwsOpt = o;
   o.depends("action", "zapret");
   o.rows = 6;
   o.wrap = "soft";
@@ -7709,32 +7778,8 @@ function openZapretAutodetectModal(sectionId, textarea) {
     refreshOptionChoices(this, choices);
     return "";
   };
-  const origPreset2Render = preset2Opt.renderWidget;
-  preset2Opt.renderWidget = function (section_id, option_index, cfgvalue) {
-    const node = origPreset2Render.call(
-      this,
-      section_id,
-      option_index,
-      cfgvalue,
-    );
-    const select =
-      node && typeof node.querySelector === "function"
-        ? node.querySelector("select")
-        : node;
-    if (select) {
-      select.addEventListener("change", () => {
-        const val = select.value;
-        if (!val) return;
-        const textarea = document.querySelector('textarea[name$="nfqws2_opt"]');
-        if (textarea) {
-          textarea.value = val;
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
-          textarea.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      });
-    }
-    return node;
-  };
+  let nfqws2Opt;
+  attachPresetDropdownHandler(preset2Opt, "nfqws2_opt", () => nfqws2Opt);
 
   o = section.taboption(
     "settings",
@@ -7742,19 +7787,24 @@ function openZapretAutodetectModal(sectionId, textarea) {
     "nfqws2_opt",
     _("NFQWS2 Strategy"),
   );
+  nfqws2Opt = o;
   o.depends("action", "zapret2");
   o.rows = 6;
   o.wrap = "soft";
   o.textarea = true;
   o.modalonly = true;
+  o.rmempty = true;
+  o.placeholder = _("По умолчанию (стандартная стратегия Zapret2)");
   o.load = function (section_id) {
-    return (
-      uci.get(UCI_PACKAGE, section_id, "nfqws2_opt") ||
-      ZAPRET2_DEFAULT_NFQWS2_OPT
-    );
+    return uci.get(UCI_PACKAGE, section_id, "nfqws2_opt") || "";
   };
   o.write = function (section_id, value) {
     const normalized = normalizeNfqws2StrategyValue(value);
+
+    if (!normalized.length) {
+      uci.set(UCI_PACKAGE, section_id, "nfqws2_opt", "");
+      return Promise.resolve();
+    }
 
     return validateNfqws2StrategyRemotely(normalized).then((result) => {
       if (!result || result.valid !== true) {
@@ -7769,6 +7819,9 @@ function openZapretAutodetectModal(sectionId, textarea) {
     });
   };
   o.validate = function (_section_id, value) {
+    if (!value || !value.trim().length) {
+      return true;
+    }
     const analysis = analyzeNfqws2Strategy(value);
     return analysis.valid ? true : analysis.message;
   };
