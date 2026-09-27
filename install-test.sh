@@ -84,7 +84,7 @@ msg "📦 Обновление списков пакетов..."
 pkg_update || warn "Не удалось обновить списки пакетов, пробуем продолжить..."
 
 CORE_DEPS="ca-bundle curl ucode ucode-mod-fs ucode-mod-uci nftables ip-full tar unzip"
-OPTIONAL_DEPS="kmod-inet-diag kmod-netlink-diag kmod-tun kmod-nft-tproxy kmod-nft-nat coreutils-base64 bind-dig luci-base"
+OPTIONAL_DEPS="kmod-inet-diag kmod-netlink-diag kmod-tun kmod-nft-tproxy kmod-nft-nat coreutils-base64 bind-dig luci-base luci-i18n-base-ru luci-i18n-firewall-ru"
 
 MISSING_DEPS=""
 for pkg in $CORE_DEPS $OPTIONAL_DEPS; do
@@ -97,6 +97,12 @@ if [ -n "$MISSING_DEPS" ]; then
     msg "📥 Установка недостающих зависимостей:$MISSING_DEPS"
     # shellcheck disable=SC2086
     pkg_install $MISSING_DEPS || warn "Некоторые зависимости не удалось установить, продолжаем..."
+fi
+
+# Ensure Russian LuCI base language pack is installed
+if ! pkg_is_installed luci-i18n-base-ru; then
+    msg "📥 Установка русского языкового пакета LuCI (luci-i18n-base-ru)..."
+    pkg_install luci-i18n-base-ru || warn "Не удалось установить luci-i18n-base-ru"
 fi
 
 # 5. Sing-box installation check
@@ -259,6 +265,12 @@ if [ -d /www/luci-static/proton2025 ] || pkg_is_installed luci-theme-proton2025;
     uci set luci.main.mediaurlbase='/luci-static/proton2025'
     uci commit luci 2>/dev/null || true
     msg "   ✓ Тема Proton2025 активирована"
+fi
+
+if pkg_is_installed luci-i18n-base-ru || [ -f /usr/lib/lua/luci/i18n/base.ru.lmo ]; then
+    uci set luci.main.lang='ru'
+    uci commit luci 2>/dev/null || true
+    msg "   ✓ Язык интерфейса LuCI установлен: русский (ru)"
 fi
 
 # 12. Run uci-defaults and reload LuCI / rpcd

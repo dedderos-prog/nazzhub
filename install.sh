@@ -1967,6 +1967,22 @@ install_ui_packages() {
     if [ -n "$NAZZHUB_I18N_FILE" ]; then
         pkg_install_files "$NAZZHUB_I18N_FILE" || fail "luci-i18n-nazzhub-ru installation failed"
     fi
+
+    if [ "$NAZZHUB_I18N_REQUESTED" -eq 1 ] || [ "$INSTALLER_LANG" = "ru" ]; then
+        if ! pkg_is_installed "luci-i18n-base-ru"; then
+            if installer_is_ru; then
+                msg "Установка русского языкового пакета LuCI (luci-i18n-base-ru)..."
+            else
+                msg "Installing LuCI Russian language pack (luci-i18n-base-ru)..."
+            fi
+            pkg_install_name "luci-i18n-base-ru" || warn "Failed to install luci-i18n-base-ru"
+        fi
+        if ! pkg_is_installed "luci-i18n-firewall-ru"; then
+            pkg_install_name "luci-i18n-firewall-ru" 2>/dev/null || true
+        fi
+        uci set luci.main.lang='ru' 2>/dev/null || true
+        uci commit luci 2>/dev/null || true
+    fi
 }
 
 install_zapret_component() {
