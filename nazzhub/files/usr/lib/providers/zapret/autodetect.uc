@@ -10,6 +10,7 @@ const NFQWS_BIN = "/opt/zapret/nfq/nfqws";
 const PROBE_NFT_TABLE = "nazzhub_probe";
 const PROBE_QUEUE = 4099;
 const DESYNC_MARK = "0x10000000";
+const AUTODETECT_STATE_FILE = "/var/run/nazzhub/ui-state/zapret-autodetect.json";
 
 function as_string(val) {
     return val == null ? "" : "" + val;
@@ -21,6 +22,29 @@ function trim(val) {
 
 function write_json(val) {
     print(sprintf("%J", val), "\n");
+}
+
+function ensure_ui_state_dir() {
+    if (!fs.stat("/var/run/nazzhub/ui-state"))
+        system("mkdir -p /var/run/nazzhub/ui-state");
+}
+
+function save_state(state) {
+    ensure_ui_state_dir();
+    fs.writefile(AUTODETECT_STATE_FILE, sprintf("%J", state));
+}
+
+function read_state() {
+    let data = fs.readfile(AUTODETECT_STATE_FILE);
+    if (!data)
+        return null;
+    let state = null;
+    try {
+        state = json(data);
+    } catch (e) {
+        state = null;
+    }
+    return state;
 }
 
 function command_status(cmd) {
@@ -115,6 +139,7 @@ function setup_probe_firewall() {
 }
 
 function cleanup_probe_firewall() {
+    system("pkill -9 -f 'qnum=" + PROBE_QUEUE + "' 2>/dev/null || true");
     system("nft delete table inet " + PROBE_NFT_TABLE + " 2>/dev/null || true");
 }
 
@@ -127,19 +152,18 @@ function test_single_strategy(strategy, target_url) {
     if (pid == "" || int(pid) <= 0)
         return { success: false, code: 0, time: 0, error: "failed to start nfqws" };
 
-    system("sleep 0.3");
+    system("sleep 0.1");
 
-    let curl_cmd = "curl -k -s -o /dev/null -w '%{http_code}:%{time_total}' -m 3 --connect-timeout 2 '" + target_url + "'";
+    let curl_cmd = "curl -k -s -o /dev/null -w '%{http_code}:%{time_total}' -m 1.8 --connect-timeout 1.2 '" + target_url + "'";
     let output = trim(command_output(curl_cmd));
 
     system("kill -9 " + pid + " 2>/dev/null || true");
+    system("pkill -9 -f 'qnum=" + PROBE_QUEUE + "' 2>/dev/null || true");
 
     let parts = split(output, ":");
     let code = int(parts[0] || 0);
     let time = length(parts) > 1 ? +parts[1] : 0.0;
 
-    // A valid response through DPI means HTTP status is received (200, 204, 301, 302, 400, 403, 404)
-    // Code 000 means TCP RST or timeout by DPI
     let is_ok = code >= 200 && code < 500;
     return {
         success: is_ok,
@@ -148,7 +172,7 @@ function test_single_strategy(strategy, target_url) {
     };
 }
 
-function autodetect(category, section_name, should_apply) {
+function autodetect_worker(category, section_name, should_apply) {
     category = lc(as_string(category || "youtube"));
     section_name = as_string(section_name || "zapret");
     should_apply = as_string(should_apply) == "1";
@@ -163,10 +187,13 @@ function autodetect(category, section_name, should_apply) {
 
     let strategies = list_strategies(category);
     if (length(strategies) == 0) {
-        write_json({
+        let err_res = {
+            status: "done",
             success: false,
             message: "No strategies found in " + STRATEGIES_BASE_DIR + "/" + category
-        });
+        };
+        save_state(err_res);
+        write_json(err_res);
         return 1;
     }
 
@@ -175,8 +202,21 @@ function autodetect(category, section_name, should_apply) {
     let tested_results = [];
     let best_strategy = null;
     let min_latency = 99999.0;
+    let total = length(strategies);
 
-    for (let item in strategies) {
+    for (let i = 0; i < total; i++) {
+        let item = strategies[i];
+        save_state({
+            status: "running",
+            category: category,
+            target_url: target_url,
+            current: i + 1,
+            total: total,
+            current_name: item.name,
+            results: tested_results,
+            best_strategy: best_strategy
+        });
+
         let res = test_single_strategy(item.strategy, target_url);
         let result_entry = {
             id: item.id,
@@ -193,6 +233,17 @@ function autodetect(category, section_name, should_apply) {
             min_latency = res.time;
             best_strategy = result_entry;
         }
+
+        save_state({
+            status: "running",
+            category: category,
+            target_url: target_url,
+            current: i + 1,
+            total: total,
+            current_name: item.name,
+            results: tested_results,
+            best_strategy: best_strategy
+        });
     }
 
     cleanup_probe_firewall();
@@ -208,7 +259,8 @@ function autodetect(category, section_name, should_apply) {
         }
     }
 
-    write_json({
+    let final_res = {
+        status: "done",
         success: true,
         category: category,
         target_url: target_url,
@@ -216,7 +268,58 @@ function autodetect(category, section_name, should_apply) {
         best_strategy: best_strategy,
         applied: applied,
         results: tested_results
+    };
+    save_state(final_res);
+    write_json(final_res);
+    return 0;
+}
+
+function autodetect(category, section_name, should_apply) {
+    return autodetect_worker(category, section_name, should_apply);
+}
+
+function autodetect_async(category, section_name, should_apply) {
+    category = lc(as_string(category || "youtube"));
+    section_name = as_string(section_name || "zapret");
+    should_apply = as_string(should_apply) == "1";
+
+    let strategies = list_strategies(category);
+    let total = length(strategies);
+
+    let initial_state = {
+        status: "running",
+        category: category,
+        current: 0,
+        total: total,
+        current_name: "Инициализация...",
+        results: [],
+        best_strategy: null
+    };
+    save_state(initial_state);
+
+    let cmd = "/usr/bin/nazzhub zapret_autodetect_worker " + category + " " + section_name + " " + (should_apply ? "1" : "0") + " >/dev/null 2>&1 &";
+    system(cmd);
+
+    write_json({
+        success: true,
+        job_id: "zapret_autodetect",
+        total: total,
+        message: "Autodetect started"
     });
+    return 0;
+}
+
+function autodetect_status() {
+    let state = read_state();
+    if (!state) {
+        write_json({
+            status: "idle",
+            success: false,
+            message: "No autodetect job found"
+        });
+        return 0;
+    }
+    write_json(state);
     return 0;
 }
 
@@ -253,9 +356,15 @@ if (mode == "list-strategies")
     exit(list_strategies_command(ARGV[1]));
 else if (mode == "autodetect")
     exit(autodetect(ARGV[1], ARGV[2], ARGV[3]));
+else if (mode == "autodetect-async")
+    exit(autodetect_async(ARGV[1], ARGV[2], ARGV[3]));
+else if (mode == "autodetect-worker")
+    exit(autodetect_worker(ARGV[1], ARGV[2], ARGV[3]));
+else if (mode == "autodetect-status")
+    exit(autodetect_status());
 else if (mode == "apply")
     exit(apply_strategy(ARGV[1], ARGV[2]));
 else {
-    warn("Usage: autodetect.uc <list-strategies|autodetect|apply> [args...]\n");
+    warn("Usage: autodetect.uc <list-strategies|autodetect|autodetect-async|autodetect-worker|autodetect-status|apply> [args...]\n");
     exit(1);
 }

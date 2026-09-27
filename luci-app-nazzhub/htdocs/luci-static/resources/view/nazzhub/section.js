@@ -7160,7 +7160,20 @@ function openZapretAutodetectModal(sectionId, textarea) {
         runButton.disabled = true;
         categorySelect.disabled = true;
 
+        const prevRpcTimeout = L.env.rpctimeout;
+        L.env.rpctimeout = 120;
+
         statusContainer.innerHTML = "";
+        const progressDetail = E(
+          "div",
+          { style: "font-size: 0.9em; margin-top: 4px; color: #555;" },
+          _("Запуск фонового подбора стратегий..."),
+        );
+        const liveTableContainer = E("div", {
+          style:
+            "margin-top: 15px; max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 4px; display: none;",
+        });
+
         statusContainer.appendChild(
           E(
             "div",
@@ -7170,269 +7183,339 @@ function openZapretAutodetectModal(sectionId, textarea) {
             },
             [
               E("span", { style: "font-size: 1.5em;" }, "⏳"),
-              E("div", {}, [
+              E("div", { style: "flex-grow: 1;" }, [
                 E("strong", {}, _("Выполняется тестирование стратегий...")),
-                E(
-                  "div",
-                  { style: "font-size: 0.9em; margin-top: 4px; color: #555;" },
-                  _(
-                    "Тестируем стратегии через изолированную очередь nftables. Это займет около 15-30 секунд...",
-                  ),
-                ),
+                progressDetail,
               ]),
             ],
           ),
         );
+        statusContainer.appendChild(liveTableContainer);
 
+        function updateTable(testedResults, best) {
+          if (!testedResults || testedResults.length === 0) return;
+          liveTableContainer.style.display = "block";
+          liveTableContainer.innerHTML = "";
+
+          const rows = [];
+          testedResults.forEach((item) => {
+            const isWorking = item.working === true;
+            const ms = isWorking
+              ? Math.round((item.time || 0) * 1000) + " ms"
+              : "—";
+            const isBest = best && best.id === item.id;
+
+            const selectBtn = isWorking
+              ? E(
+                  "button",
+                  {
+                    class: isBest
+                      ? "btn cbi-button cbi-button-apply"
+                      : "btn cbi-button cbi-button-action",
+                    style: "padding: 2px 8px; font-size: 0.85em;",
+                    type: "button",
+                    click: function () {
+                      if (textarea) {
+                        textarea.value = item.strategy;
+                        textarea.dispatchEvent(
+                          new Event("input", { bubbles: true }),
+                        );
+                        textarea.dispatchEvent(
+                          new Event("change", { bubbles: true }),
+                        );
+                      }
+                      ui.addNotification(
+                        null,
+                        E(
+                          "p",
+                          {},
+                          _("✓ Выбрана стратегия '") + item.name + "'",
+                        ),
+                        "info",
+                      );
+                      if (pollTimer) clearInterval(pollTimer);
+                      ui.hideModal();
+                    },
+                  },
+                  _("Выбрать"),
+                )
+              : E(
+                  "span",
+                  { style: "color: #999; font-size: 0.85em;" },
+                  _("Недоступно"),
+                );
+
+            rows.push(
+              E(
+                "tr",
+                {
+                  class: "tr",
+                  style: isBest
+                    ? "background: #f1f8e9; font-weight: 500;"
+                    : null,
+                },
+                [
+                  E("td", {}, item.name + (isBest ? " 🏆" : "")),
+                  E(
+                    "td",
+                    {},
+                    isWorking
+                      ? E(
+                          "span",
+                          {
+                            style:
+                              "color: #2e7d32; font-weight: bold;",
+                          },
+                          "🟢 " + item.code + " OK",
+                        )
+                      : E(
+                          "span",
+                          { style: "color: #c62828;" },
+                          "🔴 " + (item.code ? item.code : "Блок DPI"),
+                        ),
+                  ),
+                  E("td", {}, ms),
+                  E("td", { style: "text-align: right;" }, selectBtn),
+                ],
+              ),
+            );
+          });
+
+          const table = E(
+            "table",
+            {
+              class: "table cbi-section-table",
+              style: "width: 100%; font-size: 0.9em;",
+            },
+            [
+              E("thead", {}, [
+                E("tr", {}, [
+                  E("th", { class: "th" }, _("Стратегия")),
+                  E("th", { class: "th" }, _("Статус")),
+                  E("th", { class: "th" }, _("Задержка")),
+                  E(
+                    "th",
+                    { class: "th", style: "text-align: right;" },
+                    _("Действие"),
+                  ),
+                ]),
+              ]),
+              E("tbody", {}, rows),
+            ],
+          );
+          liveTableContainer.appendChild(table);
+        }
+
+        function finishAutodetect(payload) {
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+          L.env.rpctimeout = prevRpcTimeout;
+          runButton.disabled = false;
+          categorySelect.disabled = false;
+
+          if (!payload || !payload.success) {
+            statusContainer.innerHTML = "";
+            statusContainer.appendChild(
+              E("div", { class: "alert-message danger" }, [
+                E("strong", {}, _("Ошибка тестирования: ")),
+                payload && payload.message
+                  ? payload.message
+                  : _("Неизвестная ошибка"),
+              ]),
+            );
+            return;
+          }
+
+          const testedResults = payload.results || [];
+          const best = payload.best_strategy;
+          statusContainer.innerHTML = "";
+
+          if (best) {
+            const latencyMs = Math.round((best.time || 0) * 1000);
+            statusContainer.appendChild(
+              E(
+                "div",
+                {
+                  class: "alert-message success",
+                  style:
+                    "margin-bottom: 15px; padding: 12px 16px; border-left: 5px solid #28a745; background: #e8f5e9;",
+                },
+                [
+                  E(
+                    "h4",
+                    {
+                      style:
+                        "margin: 0 0 6px 0; color: #1b5e20; font-size: 1.1em;",
+                    },
+                    _("🎉 Найдена лучшая стратегия!"),
+                  ),
+                  E(
+                    "div",
+                    { style: "font-size: 1.05em; margin-bottom: 8px;" },
+                    [
+                      _("Стратегия: "),
+                      E("strong", { style: "color: #0d47a1;" }, best.name),
+                      _(" — Задержка: "),
+                      E(
+                        "strong",
+                        { style: "color: #2e7d32;" },
+                        latencyMs + " ms",
+                      ),
+                      _(" (HTTP " + best.code + ")"),
+                    ],
+                  ),
+                  E(
+                    "button",
+                    {
+                      class: "btn cbi-button cbi-button-apply",
+                      style: "font-weight: bold; margin-top: 4px;",
+                      type: "button",
+                      click: function () {
+                        if (textarea) {
+                          textarea.value = best.strategy;
+                          textarea.dispatchEvent(
+                            new Event("input", { bubbles: true }),
+                          );
+                          textarea.dispatchEvent(
+                            new Event("change", { bubbles: true }),
+                          );
+                        }
+                        ui.addNotification(
+                          null,
+                          E(
+                            "p",
+                            {},
+                            _("✓ Стратегия '") +
+                              best.name +
+                              _(
+                                "' скопирована в конфигурацию! Сохраните настройки для применения.",
+                              ),
+                          ),
+                          "info",
+                        );
+                        ui.hideModal();
+                      },
+                    },
+                    _("✔ Применить эту стратегию"),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            statusContainer.appendChild(
+              E(
+                "div",
+                {
+                  class: "alert-message warning",
+                  style: "margin-bottom: 15px;",
+                },
+                [
+                  E(
+                    "strong",
+                    {},
+                    _("⚠️ Ни одна из стратегий не смогла обойти блокировку."),
+                  ),
+                  E(
+                    "p",
+                    { style: "margin: 6px 0 0 0; font-size: 0.9em;" },
+                    _(
+                      "Попробуйте выбрать другую категорию (например, General) или проверьте интернет-соединение.",
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (testedResults.length > 0) {
+            liveTableContainer.style.display = "block";
+            updateTable(testedResults, best);
+            statusContainer.appendChild(liveTableContainer);
+          }
+        }
+
+        let pollTimer = null;
         fs.exec(NFQWS_VALIDATION_COMMAND, [
-          "zapret_autodetect",
+          "zapret_autodetect_async",
           selectedCategory,
           sectionId,
           "0",
         ])
           .then((res) => {
-            runButton.disabled = false;
-            categorySelect.disabled = false;
-            statusContainer.innerHTML = "";
-
-            let payload = null;
+            let startRes = null;
             try {
-              payload = JSON.parse(
+              startRes = JSON.parse(
                 (res && res.stdout ? res.stdout : "{}").trim() || "{}",
               );
             } catch (e) {
-              payload = null;
+              startRes = null;
             }
 
-            if (!payload || !payload.success) {
-              statusContainer.appendChild(
-                E("div", { class: "alert-message danger" }, [
-                  E("strong", {}, _("Ошибка тестирования: ")),
-                  payload && payload.message
-                    ? payload.message
-                    : res && res.stderr
-                      ? res.stderr
-                      : _("Неизвестная ошибка"),
-                ]),
-              );
-              return;
-            }
-
-            const testedResults = payload.results || [];
-            const best = payload.best_strategy;
-
-            if (best) {
-              const latencyMs = Math.round((best.time || 0) * 1000);
-              statusContainer.appendChild(
-                E(
-                  "div",
-                  {
-                    class: "alert-message success",
-                    style:
-                      "margin-bottom: 15px; padding: 12px 16px; border-left: 5px solid #28a745; background: #e8f5e9;",
-                  },
-                  [
-                    E(
-                      "h4",
-                      {
-                        style:
-                          "margin: 0 0 6px 0; color: #1b5e20; font-size: 1.1em;",
-                      },
-                      _("🎉 Найдена лучшая стратегия!"),
-                    ),
-                    E(
-                      "div",
-                      { style: "font-size: 1.05em; margin-bottom: 8px;" },
-                      [
-                        _("Стратегия: "),
-                        E("strong", { style: "color: #0d47a1;" }, best.name),
-                        _(" — Задержка: "),
-                        E(
-                          "strong",
-                          { style: "color: #2e7d32;" },
-                          latencyMs + " ms",
-                        ),
-                        _(" (HTTP " + best.code + ")"),
-                      ],
-                    ),
-                    E(
-                      "button",
-                      {
-                        class: "btn cbi-button cbi-button-apply",
-                        style: "font-weight: bold; padding: 6px 14px; margin-top: 8px;",
-                        type: "button",
-                        click: function () {
-                          if (textarea) {
-                            textarea.value = best.strategy;
-                            textarea.dispatchEvent(
-                              new Event("input", { bubbles: true }),
-                            );
-                            textarea.dispatchEvent(
-                              new Event("change", { bubbles: true }),
-                            );
-                          }
-                          ui.addNotification(
-                            null,
-                            E(
-                              "p",
-                              {},
-                              _("✓ Стратегия '") +
-                                best.name +
-                                _(
-                                  "' скопирована в конфигурацию! Сохраните настройки для применения.",
-                                ),
-                            ),
-                            "info",
-                          );
-                          ui.hideModal();
-                        },
-                      },
-                      _("✔ Применить эту стратегию"),
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              statusContainer.appendChild(
-                E(
-                  "div",
-                  {
-                    class: "alert-message warning",
-                    style: "margin-bottom: 15px;",
-                  },
-                  [
-                    E(
-                      "strong",
-                      {},
-                      _("⚠️ Ни одна из стратегий не смогла обойти блокировку."),
-                    ),
-                    E(
-                      "p",
-                      { style: "margin: 6px 0 0 0; font-size: 0.9em;" },
-                      _(
-                        "Попробуйте выбрать другую категорию (например, General) или проверьте интернет-соединение.",
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (testedResults.length > 0) {
-              const rows = [];
-              testedResults.forEach((item) => {
-                const isWorking = item.working === true;
-                const ms = isWorking
-                  ? Math.round((item.time || 0) * 1000) + " ms"
-                  : "—";
-                const isBest = best && best.id === item.id;
-
-                const selectBtn = isWorking
-                  ? E(
-                      "button",
-                      {
-                        class: isBest
-                          ? "btn cbi-button cbi-button-apply"
-                          : "btn cbi-button cbi-button-action",
-                        style: "padding: 2px 8px; font-size: 0.85em;",
-                        type: "button",
-                        click: function () {
-                          if (textarea) {
-                            textarea.value = item.strategy;
-                            textarea.dispatchEvent(
-                              new Event("input", { bubbles: true }),
-                            );
-                            textarea.dispatchEvent(
-                              new Event("change", { bubbles: true }),
-                            );
-                          }
-                          ui.addNotification(
-                            null,
-                            E(
-                              "p",
-                              {},
-                              _("✓ Выбрана стратегия '") + item.name + "'",
-                            ),
-                            "info",
-                          );
-                          ui.hideModal();
-                        },
-                      },
-                      isBest ? _("Выбрана") : _("Выбрать"),
-                    )
-                  : E("span", { style: "color: #999;" }, "—");
-
-                rows.push(
-                  E(
-                    "tr",
-                    {
-                      style: isBest
-                        ? "background: #f1f8e9; font-weight: 500;"
-                        : null,
-                    },
-                    [
-                      E("td", {}, item.name + (isBest ? " 🏆" : "")),
-                      E(
-                        "td",
-                        {},
-                        isWorking
-                          ? E(
-                              "span",
-                              {
-                                style:
-                                  "color: #2e7d32; font-weight: bold;",
-                              },
-                              "🟢 " + item.code + " OK",
-                            )
-                          : E(
-                              "span",
-                              { style: "color: #c62828;" },
-                              "🔴 " + (item.code ? item.code : "Блок DPI"),
-                            ),
-                      ),
-                      E("td", {}, ms),
-                      E("td", { style: "text-align: right;" }, selectBtn),
-                    ],
-                  ),
-                );
+            if (!startRes || !startRes.success) {
+              return fs.exec(NFQWS_VALIDATION_COMMAND, [
+                "zapret_autodetect",
+                selectedCategory,
+                sectionId,
+                "0",
+              ]).then((syncRes) => {
+                let payload = null;
+                try {
+                  payload = JSON.parse(
+                    (syncRes && syncRes.stdout ? syncRes.stdout : "{}").trim() || "{}",
+                  );
+                } catch (e) {
+                  payload = null;
+                }
+                finishAutodetect(payload);
               });
-
-              const table = E(
-                "table",
-                {
-                  class: "table cbi-section-table",
-                  style: "width: 100%; margin-top: 10px; font-size: 0.9em;",
-                },
-                [
-                  E("thead", {}, [
-                    E("tr", {}, [
-                      E("th", { class: "th" }, _("Стратегия")),
-                      E("th", { class: "th" }, _("Статус")),
-                      E("th", { class: "th" }, _("Задержка")),
-                      E(
-                        "th",
-                        { class: "th", style: "text-align: right;" },
-                        _("Действие"),
-                      ),
-                    ]),
-                  ]),
-                  E("tbody", {}, rows),
-                ],
-              );
-
-              statusContainer.appendChild(
-                E(
-                  "div",
-                  {
-                    style:
-                      "max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 4px;",
-                  },
-                  [table],
-                ),
-              );
             }
+
+            pollTimer = setInterval(() => {
+              if (!statusContainer.isConnected) {
+                if (pollTimer) clearInterval(pollTimer);
+                L.env.rpctimeout = prevRpcTimeout;
+                return;
+              }
+
+              fs.exec(NFQWS_VALIDATION_COMMAND, ["zapret_autodetect_status"])
+                .then((statusRes) => {
+                  let state = null;
+                  try {
+                    state = JSON.parse(
+                      (statusRes && statusRes.stdout ? statusRes.stdout : "{}").trim() || "{}",
+                    );
+                  } catch (e) {
+                    state = null;
+                  }
+
+                  if (!state) return;
+
+                  if (state.status === "running") {
+                    const cur = state.current || 0;
+                    const total = state.total || 0;
+                    const curName = state.current_name || "";
+                    progressDetail.textContent =
+                      _("Протестировано ") +
+                      cur +
+                      " " +
+                      _("из") +
+                      " " +
+                      total +
+                      (curName ? " (" + curName + ")..." : "...");
+                    if (state.results && state.results.length > 0) {
+                      updateTable(state.results, state.best_strategy);
+                    }
+                  } else if (state.status === "done") {
+                    finishAutodetect(state);
+                  }
+                })
+                .catch(() => {});
+            }, 1000);
           })
           .catch((err) => {
+            L.env.rpctimeout = prevRpcTimeout;
             runButton.disabled = false;
             categorySelect.disabled = false;
             statusContainer.innerHTML = "";
