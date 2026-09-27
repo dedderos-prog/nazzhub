@@ -270,10 +270,10 @@ choose_action() {
         printf '%s [1]: ' "Ваш выбор"
 
         answer=""
-        if [ -t 0 ]; then
-            read -r answer || answer="1"
-        elif [ -r /dev/tty ]; then
+        if [ -r /dev/tty ]; then
             read -r answer < /dev/tty || answer="1"
+        elif [ -t 0 ]; then
+            read -r answer || answer="1"
         else
             answer="1"
         fi
