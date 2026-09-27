@@ -69,7 +69,7 @@ function renderSectionAdd(sectionRef, extra_class) {
 function getRuleEditButtonText() {
   const label = _("Edit rule action");
 
-  return label === "Edit rule action" ? "Edit" : label;
+  return label === "Edit rule action" || label === "Edit" ? "Редактировать" : label;
 }
 
 function configureGridSection(sectionRef, type, title, addTitle) {
@@ -341,8 +341,8 @@ const EntryPoint = {
     };
     const nazzhubMap = new form.Map(
       UCI_PACKAGE,
-      _("NAZZHUB Settings"),
-      _("Configuration for NAZZHUB service"),
+      _("Настройки NAZZHUB"),
+      _("Конфигурация службы NAZZHUB"),
     );
     nazzhubMap.tabbed = true;
     const originalHandleSaveApply = nazzhubMap.handleSaveApply;
@@ -389,8 +389,8 @@ const EntryPoint = {
     const subscriptionSection = nazzhubMap.section(
       form.TypedSection,
       "subscription_url",
-      _("Subscription"),
-      _("Quick setup: paste your VPN subscription link to automatically configure proxy servers."),
+      _("Подписка"),
+      _("Быстрый старт: вставьте ссылку на подписку VPN для автоматической настройки прокси-серверов."),
     );
     subscriptionSection.anonymous = true;
     subscriptionSection.addremove = false;
@@ -410,14 +410,14 @@ const EntryPoint = {
     const rulesSection = nazzhubMap.section(
       form.GridSection,
       "section",
-      _("Sections"),
-      _("Drag rows to change priority. The rule at the top is checked first."),
+      _("Секции"),
+      _("Перетаскивайте строки для изменения приоритета. Правило наверху проверяется первым."),
     );
     configureGridSection(
       rulesSection,
       "section",
-      _("Section"),
-      _("Add a section"),
+      _("Секция"),
+      _("Добавить секцию"),
     );
     section.configureSectionSection(rulesSection, {
       loadActionProvidersAvailability: loadUiCapabilities,
@@ -427,14 +427,14 @@ const EntryPoint = {
     const serverSection = nazzhubMap.section(
       form.GridSection,
       "server",
-      _("Servers"),
-      _("Accept external proxy connections and route them with sing-box."),
+      _("Серверы"),
+      _("Принимает внешние прокси-подключения и маршрутизирует их через sing-box."),
     );
     configureGridSection(
       serverSection,
       "server",
-      _("Server"),
-      _("Add a server inbound"),
+      _("Сервер"),
+      _("Добавить серверный inbound"),
     );
     serverSectionRef = serverSection;
     server.configureServerSection(serverSection, {
@@ -445,7 +445,7 @@ const EntryPoint = {
     const settingsSection = nazzhubMap.section(
       form.TypedSection,
       "settings",
-      _("Settings"),
+      _("Настройки"),
     );
     settingsSection.anonymous = true;
     settingsSection.addremove = false;
@@ -457,7 +457,7 @@ const EntryPoint = {
     const diagnosticSection = nazzhubMap.section(
       form.TypedSection,
       "diagnostic",
-      _("Diagnostics"),
+      _("Диагностика"),
     );
     diagnosticSection.anonymous = true;
     diagnosticSection.addremove = false;
@@ -469,7 +469,7 @@ const EntryPoint = {
     const dashboardSection = nazzhubMap.section(
       form.TypedSection,
       "dashboard",
-      _("Dashboard"),
+      _("Дашборд"),
     );
     dashboardSection.anonymous = true;
     dashboardSection.addremove = false;
@@ -481,7 +481,7 @@ const EntryPoint = {
     const monitoringSection = nazzhubMap.section(
       form.TypedSection,
       "monitoring",
-      _("Monitoring"),
+      _("Мониторинг"),
     );
     monitoringSection.anonymous = true;
     monitoringSection.addremove = false;
@@ -493,7 +493,7 @@ const EntryPoint = {
     const updatesSection = nazzhubMap.section(
       form.TypedSection,
       "updates",
-      _("Components"),
+      _("Компоненты"),
     );
     updatesSection.anonymous = true;
     updatesSection.addremove = false;

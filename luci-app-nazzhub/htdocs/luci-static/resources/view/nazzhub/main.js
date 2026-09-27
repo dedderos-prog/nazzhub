@@ -4167,7 +4167,18 @@ var TabServiceInstance = TabService.getInstance();
 
 // src/nazzhub/tabs/diagnostic/helpers/getCheckTitle.ts
 function getCheckTitle(name) {
-  return `${name} ${_("checks")}`;
+  const titles = {
+    "DNS": "Проверки DNS",
+    "Sing-box": "Проверки Sing-box",
+    "Inbounds": "Проверки Inbounds",
+    "Nftables": "Проверки Nftables",
+    "Zapret": "Проверки Zapret",
+    "Zapret2": "Проверки Zapret2",
+    "ByeDPI": "Проверки ByeDPI",
+    "Outbounds": "Проверки Outbounds",
+    "FakeIP": "Проверки FakeIP"
+  };
+  return titles[name] || ("Проверки " + name);
 }
 
 // src/nazzhub/tabs/diagnostic/checks/contstants.ts
@@ -7576,18 +7587,18 @@ function getMeta({ allGood, atLeastOneGood }) {
   if (allGood) {
     return {
       state: "success",
-      description: _("Checks passed")
+      description: _("Проверки пройдены")
     };
   }
   if (atLeastOneGood) {
     return {
       state: "warning",
-      description: _("Issues detected")
+      description: _("Обнаружены замечания")
     };
   }
   return {
     state: "error",
-    description: _("Checks failed")
+    description: _("Проверки не пройдены")
   };
 }
 
@@ -7599,9 +7610,9 @@ function getDnsCheckPresentation(data) {
   const atLeastOneGood = Boolean(data.dns_on_router) || dhcpCheckOk || Boolean(data.bootstrap_dns_status) || Boolean(data.dns_status);
   const meta = getMeta({ atLeastOneGood, allGood });
   const state = dhcpManagedManually && meta.state === "success" ? "warning" : meta.state;
-  const description = dhcpManagedManually && meta.state === "success" ? _("Checks passed with manual DHCP") : meta.description;
+  const description = dhcpManagedManually && meta.state === "success" ? _("Проверки пройдены (DHCP настроен вручную)") : meta.description;
   const dhcpItemState = dhcpManagedManually ? "warning" : data.dhcp_config_status ? "success" : "error";
-  const dhcpItemKey = dhcpManagedManually ? _("DHCP is managed manually") : _("DHCP has DNS server");
+  const dhcpItemKey = dhcpManagedManually ? _("DHCP настраивается вручную") : _("DHCP предоставляет DNS");
   return {
     state,
     description,
@@ -7617,7 +7628,7 @@ async function runDnsCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -7627,7 +7638,7 @@ async function runDnsCheck() {
       order,
       code,
       title,
-      description: _("Cannot receive checks result"),
+      description: _("Не удалось получить результат проверки"),
       state: "error",
       items: []
     });
@@ -7647,19 +7658,19 @@ async function runDnsCheck() {
         [
           {
             state: data.bootstrap_dns_status ? "success" : "error",
-            key: data.bootstrap_dns_server_count > 1 ? _("Active Bootstrap DNS") : _("Bootstrap DNS"),
+            key: data.bootstrap_dns_server_count > 1 ? _("Активный Bootstrap DNS") : _("Bootstrap DNS"),
             value: data.bootstrap_dns_server_count > 1 ? `${data.bootstrap_dns_server} (${data.bootstrap_dns_server_index + 1}/${data.bootstrap_dns_server_count})` : data.bootstrap_dns_server
           }
         ]
       ),
       {
         state: data.dns_status ? "success" : "error",
-        key: data.dns_server_count > 1 ? _("Active Main DNS") : _("Main DNS"),
+        key: data.dns_server_count > 1 ? _("Активный основной DNS") : _("Основной DNS"),
         value: data.dns_server_count > 1 ? `${data.dns_server} [${data.dns_type}] (${data.dns_server_index + 1}/${data.dns_server_count})` : `${data.dns_server} [${data.dns_type}]`
       },
       {
         state: data.dns_on_router ? "success" : "error",
-        key: _("DNS on router"),
+        key: _("DNS на роутере"),
         value: ""
       },
       {
@@ -7681,7 +7692,7 @@ async function runSingBoxCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -7691,7 +7702,7 @@ async function runSingBoxCheck() {
       order,
       code,
       title,
-      description: _("Cannot receive checks result"),
+      description: _("Не удалось получить результат проверки"),
       state: "error",
       items: []
     });
@@ -7710,32 +7721,32 @@ async function runSingBoxCheck() {
     items: [
       {
         state: data.sing_box_installed ? "success" : "error",
-        key: _("Sing-box installed"),
+        key: _("Sing-box установлен"),
         value: ""
       },
       {
         state: data.sing_box_version_ok ? "success" : "error",
-        key: _("Sing-box version is compatible (newer than 1.12.4)"),
+        key: _("Версия sing-box совместима (новее 1.12.4)"),
         value: ""
       },
       {
         state: data.sing_box_service_exist ? "success" : "error",
-        key: _("Sing-box service exist"),
+        key: _("Служба sing-box существует"),
         value: ""
       },
       {
         state: data.sing_box_autostart_disabled ? "success" : "error",
-        key: _("Sing-box autostart disabled"),
+        key: _("Автозапуск sing-box отключен"),
         value: ""
       },
       {
         state: data.sing_box_process_running ? "success" : "error",
-        key: _("Sing-box process running"),
+        key: _("Процесс sing-box запущен"),
         value: ""
       },
       {
         state: data.sing_box_ports_listening ? "success" : "error",
-        key: _("Sing-box listening ports"),
+        key: _("Порты sing-box активны"),
         value: ""
       }
     ]
@@ -7923,7 +7934,7 @@ async function runNftCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -7935,7 +7946,7 @@ async function runNftCheck() {
       order,
       code,
       title,
-      description: _("Cannot receive checks result"),
+      description: _("Не удалось получить результат проверки"),
       state: "error",
       items: []
     });
@@ -7954,42 +7965,42 @@ async function runNftCheck() {
     items: [
       {
         state: data.table_exist ? "success" : "error",
-        key: _("Table exist"),
+        key: _("Таблица nftables существует"),
         value: ""
       },
       {
         state: data.rules_mangle_exist ? "success" : "error",
-        key: _("Rules mangle exist"),
+        key: _("Правила mangle существуют"),
         value: ""
       },
       {
         state: data.rules_mangle_counters ? "success" : "warning",
-        key: _("Rules mangle counters"),
+        key: _("Счетчики mangle активны"),
         value: ""
       },
       {
         state: data.rules_mangle_output_exist ? "success" : "error",
-        key: _("Rules mangle output exist"),
+        key: _("Правила mangle output существуют"),
         value: ""
       },
       {
         state: data.rules_mangle_output_counters ? "success" : "error",
-        key: _("Rules mangle output counters"),
+        key: _("Счетчики mangle output активны"),
         value: ""
       },
       {
         state: data.rules_proxy_exist ? "success" : "error",
-        key: _("Rules proxy exist"),
+        key: _("Правила proxy существуют"),
         value: ""
       },
       {
         state: data.rules_proxy_counters ? "success" : "error",
-        key: _("Rules proxy counters"),
+        key: _("Счетчики proxy активны"),
         value: ""
       },
       {
         state: !data.rules_other_mark_exist ? "success" : "warning",
-        key: !data.rules_other_mark_exist ? _("No other marking rules found") : _("Additional marking rules found"),
+        key: !data.rules_other_mark_exist ? _("Сторонних правил маркировки не найдено") : _("Найдены дополнительные правила маркировки"),
         value: ""
       }
     ]
@@ -8006,7 +8017,7 @@ async function runFakeIPCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -8022,12 +8033,12 @@ async function runFakeIPCheck() {
     differentIP: checkFakeIPResponse.success && checkIPResponse.success && checkFakeIPResponse.data.IP !== checkIPResponse.data.IP
   };
   const fakeIPWorks = checks.singBoxFakeIP && checks.browserFakeIP;
-  const { state, description } = fakeIPWorks ? checks.differentIP ? { state: "success", description: _("Checks passed") } : {
+  const { state, description } = fakeIPWorks ? checks.differentIP ? { state: "success", description: _("Проверки пройдены") } : {
     state: "warning",
-    description: _("FakeIP works; public IP comparison is inconclusive")
+    description: _("FakeIP работает; проверка публичного IP не завершена")
   } : browserFakeIPCheckUnavailable && checks.singBoxFakeIP ? {
     state: "warning",
-    description: _("Browser FakeIP check could not be completed")
+    description: _("Проверка FakeIP через браузер не завершена")
   } : getMeta({
     allGood: false,
     atLeastOneGood: checks.singBoxFakeIP || checks.browserFakeIP
@@ -8041,18 +8052,18 @@ async function runFakeIPCheck() {
     items: [
       {
         state: checks.singBoxFakeIP ? "success" : "error",
-        key: checks.singBoxFakeIP ? _("Sing-box FakeIP DNS works") : _("Sing-box FakeIP DNS does not work"),
+        key: checks.singBoxFakeIP ? _("DNS FakeIP sing-box работает") : _("DNS FakeIP sing-box не работает"),
         value: routerFakeIPResponse.success ? routerFakeIPResponse.data.IP : ""
       },
       {
         state: browserFakeIPCheckUnavailable ? "warning" : checks.browserFakeIP ? "success" : "error",
-        key: browserFakeIPCheckUnavailable ? _("Browser FakeIP check could not be completed") : checks.browserFakeIP ? _("Browser is using FakeIP correctly") : _("Browser is not using FakeIP"),
+        key: browserFakeIPCheckUnavailable ? _("Проверка FakeIP через браузер не завершена") : checks.browserFakeIP ? _("Браузер корректно использует FakeIP") : _("Браузер не использует FakeIP"),
         value: browserFakeIPCheckMessage
       },
       ...insertIf(checks.browserFakeIP, [
         {
           state: checks.differentIP ? "success" : "warning",
-          key: !checks.canComparePublicIP ? _("Could not compare FakeIP and control public IPs") : checks.differentIP ? _("FakeIP and control checks use different public IPs") : _("FakeIP and control checks use the same public IP"),
+          key: !checks.canComparePublicIP ? _("Не удалось сравнить FakeIP и внешний IP") : checks.differentIP ? _("FakeIP и контрольная проверка используют разные публичные IP") : _("FakeIP и контрольная проверка используют один публичный IP"),
           value: ""
         }
       ])
@@ -8065,18 +8076,18 @@ function getCheckItemsMeta(items) {
   if (items.some((item) => item.state === "error")) {
     return {
       state: "error",
-      description: _("Checks failed")
+      description: _("Проверки не пройдены")
     };
   }
   if (items.some((item) => item.state === "warning")) {
     return {
       state: "warning",
-      description: _("Issues detected")
+      description: _("Обнаружены замечания")
     };
   }
   return {
     state: "success",
-    description: _("Checks passed")
+    description: _("Проверки пройдены")
   };
 }
 
@@ -8087,7 +8098,7 @@ async function runZapretCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -8097,7 +8108,7 @@ async function runZapretCheck() {
       order,
       code,
       title,
-      description: _("Cannot receive checks result"),
+      description: _("Не удалось получить результат проверки"),
       state: "error",
       items: []
     });
@@ -8119,37 +8130,37 @@ async function runZapretCheck() {
   const items = [
     {
       state: providerAvailable ? "success" : hasZapretRules ? "error" : "warning",
-      key: providerAvailable ? _("Zapret provider binary is available") : _("Zapret provider binary is not available"),
+      key: providerAvailable ? _("Бинарник провайдера Zapret доступен") : _("Бинарник провайдера Zapret недоступен"),
       value: data.provider_path || ""
     },
     {
       state: packageInstalled ? "success" : hasZapretRules ? "error" : "warning",
-      key: packageInstalled ? _("Zapret package is installed") : _("Zapret package is not installed"),
+      key: packageInstalled ? _("Пакет Zapret установлен") : _("Пакет Zapret не установлен"),
       value: ""
     },
     {
       state: hasZapretRules && !providerAvailable ? "error" : "success",
-      key: hasZapretRules ? _("There are rules using Zapret") : _("No rules use Zapret"),
+      key: hasZapretRules ? _("Есть правила, использующие Zapret") : _("Нет правил, использующих Zapret"),
       value: ""
     },
     {
       state: unexpectedRuntime || !nazzhubRuntimeReady ? "error" : "success",
-      key: hasZapretRules ? nazzhubRuntimeReady ? _("Nazzhub-managed nfqws runtime is ready") : _("Nazzhub-managed nfqws runtime is not ready") : unexpectedRuntime ? _("Unexpected Nazzhub-managed nfqws runtime is running") : _("Nazzhub-managed nfqws runtime is not running"),
+      key: hasZapretRules ? nazzhubRuntimeReady ? _("NFQWS runtime готов") : _("NFQWS runtime не готов") : unexpectedRuntime ? _("Запущен сторонний NFQWS runtime") : _("NFQWS runtime не запущен"),
       value: hasZapretRules ? `${runningProcesses}/${expectedProcesses}` : ""
     },
     {
       state: queueOverlap ? "error" : "success",
-      key: queueOverlap ? _("NFQUEUE range overlaps with another rule") : _("NFQUEUE range is available"),
+      key: queueOverlap ? _("Диапазон NFQUEUE пересекается с другим правилом") : _("Диапазон NFQUEUE доступен"),
       value: `${Number(data.queue_base || 0)}-${Number(data.queue_range_end || 0)}`
     },
     {
       state: !hasZapretRules || outboundsConfigured ? "success" : "error",
-      key: outboundsConfigured ? _("Zapret sing-box outbound is configured") : _("Zapret sing-box outbound is not configured"),
+      key: outboundsConfigured ? _("Zapret outbound в sing-box настроен") : _("Zapret outbound в sing-box не настроен"),
       value: ""
     },
     {
       state: standaloneConflict ? "warning" : "success",
-      key: standaloneServiceRunning ? hasZapretRules ? _("Standalone Zapret is active together with Nazzhub Zapret rules") : _("Standalone Zapret service is active") : _("Standalone Zapret service is inactive"),
+      key: standaloneServiceRunning ? hasZapretRules ? _("Сторонняя служба Zapret активна одновременно с правилами NAZZHUB") : _("Отдельная служба Zapret активна") : _("Отдельная служба Zapret неактивна"),
       value: ""
     }
   ];
@@ -8834,13 +8845,13 @@ function renderAvailableActions({
   showSingBoxConfig
 }) {
   return E("div", { class: "fkp_diagnostic-page__right-bar__actions" }, [
-    E("b", {}, _("Available actions")),
+    E("b", {}, _("Доступные действия")),
     ...insertIf(restart.visible, [
       renderButton({
         classNames: ["cbi-button-apply"],
         onClick: restart.onClick,
         icon: renderRotateCcwIcon24,
-        text: _("Restart Nazzhub"),
+        text: _("Перезапустить NAZZHUB"),
         loading: restart.loading,
         disabled: restart.disabled
       })
@@ -8850,7 +8861,7 @@ function renderAvailableActions({
         classNames: ["cbi-button-remove"],
         onClick: stop.onClick,
         icon: renderCircleStopIcon24,
-        text: _("Stop Nazzhub"),
+        text: _("Остановить NAZZHUB"),
         loading: stop.loading,
         disabled: stop.disabled
       })
@@ -8860,7 +8871,7 @@ function renderAvailableActions({
         classNames: ["cbi-button-save"],
         onClick: start.onClick,
         icon: renderCirclePlayIcon24,
-        text: _("Start Nazzhub"),
+        text: _("Запустить NAZZHUB"),
         loading: start.loading,
         disabled: start.disabled
       })
@@ -8870,7 +8881,7 @@ function renderAvailableActions({
         classNames: ["cbi-button-remove"],
         onClick: disable.onClick,
         icon: renderPauseIcon24,
-        text: _("Disable autostart"),
+        text: _("Отключить автозапуск"),
         loading: disable.loading,
         disabled: disable.disabled
       })
@@ -8880,7 +8891,7 @@ function renderAvailableActions({
         classNames: ["cbi-button-save"],
         onClick: enable.onClick,
         icon: renderPlayIcon24,
-        text: _("Enable autostart"),
+        text: _("Включить автозапуск"),
         loading: enable.loading,
         disabled: enable.disabled
       })
@@ -8889,7 +8900,7 @@ function renderAvailableActions({
       renderButton({
         onClick: globalCheck.onClick,
         icon: renderCircleCheckBigIcon24,
-        text: _("Get global check"),
+        text: _("Глобальная проверка"),
         loading: globalCheck.loading,
         disabled: globalCheck.disabled
       })
@@ -8898,7 +8909,7 @@ function renderAvailableActions({
       renderButton({
         onClick: viewLogs.onClick,
         icon: renderSquareChartGanttIcon24,
-        text: _("View logs"),
+        text: _("Просмотр логов"),
         loading: viewLogs.loading,
         disabled: viewLogs.disabled
       })
@@ -8907,7 +8918,7 @@ function renderAvailableActions({
       renderButton({
         onClick: showSingBoxConfig.onClick,
         icon: renderCogIcon24,
-        text: _("Show sing-box config"),
+        text: _("Показать конфиг sing-box"),
         loading: showSingBoxConfig.loading,
         disabled: showSingBoxConfig.disabled
       })
@@ -9078,7 +9089,7 @@ function renderRunAction({
 }) {
   return E("div", { class: "fkp_diagnostic-page__run_check_wrapper" }, [
     renderButton({
-      text: _("Run Diagnostic"),
+      text: _("Запустить диагностику"),
       onClick: click,
       icon: renderSearchIcon24,
       loading: loading2,
@@ -9094,7 +9105,7 @@ function renderSystemInfo({ items }) {
     E(
       "b",
       { class: "fkp_diagnostic-page__right-bar__system-info__title" },
-      _("System information")
+      _("Информация о системе")
     ),
     ...items.map((item) => {
       const tagClass = [
@@ -9151,13 +9162,13 @@ function renderWikiDisclaimer(kind) {
     E("div", { class: "fkp_diagnostic-page__right-bar__wiki__content" }, [
       iconWrap,
       E("div", { class: "fkp_diagnostic-page__right-bar__wiki__texts" }, [
-        E("b", {}, _("Troubleshooting")),
-        E("div", {}, _("Do not panic, everything can be fixed, just..."))
+        E("b", {}, _("Устранение неполадок")),
+        E("div", {}, _("Не паникуйте, всё можно исправить, просто..."))
       ])
     ]),
     renderButton({
       classNames: ["cbi-button-save"],
-      text: _("Open Project Page"),
+      text: _("Открыть страницу проекта"),
       onClick: () => window.open(
         "https://github.com/dedderos-prog/nazzhub#readme",
         "_blank",
@@ -9185,7 +9196,7 @@ async function runSectionsCheck() {
     order,
     code,
     title,
-    description: _("Checking, please wait"),
+    description: _("Проверка, подождите..."),
     state: "loading",
     items: []
   });
@@ -9197,7 +9208,7 @@ async function runSectionsCheck() {
       order,
       code,
       title,
-      description: _("Cannot receive checks result"),
+      description: _("Не удалось получить результат проверки"),
       state: "error",
       items: []
     });
@@ -9225,7 +9236,7 @@ async function runSectionsCheck() {
           }
           return {
             state: "error",
-            latency: `[${selectedOutbound2.displayName ?? ""}] ${_("Not responding")}`
+            latency: `[${selectedOutbound2.displayName ?? ""}] ${_("Не отвечает")}`
           };
         }
         const latencyGroup = await NazzhubShellMethods.getClashApiGroupLatency(
@@ -9244,7 +9255,7 @@ async function runSectionsCheck() {
           }
           return {
             state: "error",
-            latency: `[${selectedOutbound2?.displayName ?? ""}] ${_("Not responding")}`
+            latency: `[${selectedOutbound2?.displayName ?? ""}] ${_("Не отвечает")}`
           };
         }
         return {
@@ -10333,11 +10344,11 @@ function renderDiagnosticSystemInfoWidget() {
   }
   items.push(
     {
-      key: "OS",
+      key: _("ОС"),
       value: diagnosticsSystemInfo.openwrt_version
     },
     {
-      key: "Device",
+      key: _("Устройство"),
       value: diagnosticsSystemInfo.device_model
     }
   );

@@ -1976,6 +1976,21 @@ install_zapret_component() {
     fi
 }
 
+install_proton2025_theme() {
+    if [ ! -d /www/luci-static/proton2025 ] && ! pkg_is_installed luci-theme-proton2025; then
+        msg "Installing luci-theme-proton2025 theme..."
+        if command -v curl >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | WITH_DASHBOARD=1 sh || warn "Failed to install proton2025 theme"
+        elif command -v wget >/dev/null 2>&1; then
+            wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | WITH_DASHBOARD=1 sh || warn "Failed to install proton2025 theme"
+        fi
+    fi
+    if [ -d /www/luci-static/proton2025 ] || pkg_is_installed luci-theme-proton2025; then
+        uci set luci.main.mediaurlbase='/luci-static/proton2025' 2>/dev/null || true
+        uci commit luci 2>/dev/null || true
+    fi
+}
+
 post_install() {
     NAZZHUB_WAS_ENABLED="$NAZZHUB_WAS_ENABLED" NAZZHUB_WAS_RUNNING="$NAZZHUB_WAS_RUNNING" \
         install_json_ucode installer-post-install ||
@@ -2011,6 +2026,7 @@ main() {
     install_ui_packages
     install_selected_sing_box
     install_zapret_component
+    install_proton2025_theme
     post_install
 
     msg "NAZZHUB $NAZZHUB_PACKAGE_VERSION has been installed successfully"

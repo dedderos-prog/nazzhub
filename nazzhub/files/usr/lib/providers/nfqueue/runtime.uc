@@ -410,6 +410,9 @@ function stop_runtime(cfg) {
     for (let pidfile in pidfiles_in_dir(cfg.child_pid_dir))
         kill_pidfile_process(pidfile, "9");
 
+    system("killall -9 " + cfg.binary_name + " 2>/dev/null || true");
+    system("pkill -9 -f '" + cfg.runtime_path + " supervisor' 2>/dev/null || true");
+
     let remove_args = [ "rm", "-rf", cfg.pid_dir, cfg.child_pid_dir, cfg.log_dir ];
     if (cfg.hostlist_dir != "")
         push(remove_args, cfg.hostlist_dir);

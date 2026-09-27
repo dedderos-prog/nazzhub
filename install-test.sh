@@ -229,6 +229,7 @@ mkdir -p /www/luci-static/resources/view/nazzhub
 mkdir -p /usr/share/luci/menu.d
 mkdir -p /usr/share/rpcd/acl.d
 mkdir -p /etc/uci-defaults
+mkdir -p /usr/lib/lua/luci/i18n
 
 cp -rf "$EXTRACTED_DIR/luci-app-nazzhub/htdocs/luci-static/resources/view/nazzhub/"* /www/luci-static/resources/view/nazzhub/
 sed -i 's/__COMPILED_VERSION_VARIABLE__/1.0.0/g' /www/luci-static/resources/view/nazzhub/main.js 2>/dev/null || true
@@ -236,10 +237,31 @@ sed -i 's/__COMPILED_VERSION_VARIABLE__/1.0.0/g' /www/luci-static/resources/view
 cp "$EXTRACTED_DIR/luci-app-nazzhub/root/usr/share/luci/menu.d/luci-app-nazzhub.json" /usr/share/luci/menu.d/luci-app-nazzhub.json
 cp "$EXTRACTED_DIR/luci-app-nazzhub/root/usr/share/rpcd/acl.d/luci-app-nazzhub.json" /usr/share/rpcd/acl.d/luci-app-nazzhub.json
 
+if [ -f "$EXTRACTED_DIR/luci-app-nazzhub/root/usr/lib/lua/luci/i18n/nazzhub.ru.lmo" ]; then
+    cp "$EXTRACTED_DIR/luci-app-nazzhub/root/usr/lib/lua/luci/i18n/nazzhub.ru.lmo" /usr/lib/lua/luci/i18n/nazzhub.ru.lmo
+    msg "   ✓ Установлен языковой пакет /usr/lib/lua/luci/i18n/nazzhub.ru.lmo"
+fi
+
 cp "$EXTRACTED_DIR/luci-app-nazzhub/root/etc/uci-defaults/50_luci-nazzhub" /etc/uci-defaults/50_luci-nazzhub
 chmod 0755 /etc/uci-defaults/50_luci-nazzhub
 
-# 11. Run uci-defaults and reload LuCI / rpcd
+# 11. Theme installation: luci-theme-proton2025
+msg "🎨 Проверка темы интерфейса Proton2025..."
+if [ ! -d /www/luci-static/proton2025 ] && ! pkg_is_installed luci-theme-proton2025; then
+    msg "📥 Установка темы luci-theme-proton2025..."
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | WITH_DASHBOARD=1 sh || warn "Не удалось установить тему proton2025"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | WITH_DASHBOARD=1 sh || warn "Не удалось установить тему proton2025"
+    fi
+fi
+if [ -d /www/luci-static/proton2025 ] || pkg_is_installed luci-theme-proton2025; then
+    uci set luci.main.mediaurlbase='/luci-static/proton2025'
+    uci commit luci 2>/dev/null || true
+    msg "   ✓ Тема Proton2025 активирована"
+fi
+
+# 12. Run uci-defaults and reload LuCI / rpcd
 msg "🔄 Применение настроек интерфейса и сброс кэша LuCI..."
 /etc/uci-defaults/50_luci-nazzhub >/dev/null 2>&1 || true
 rm -f /tmp/luci-indexcache* /var/luci-indexcache* /tmp/luci-modulecache* 2>/dev/null || true
@@ -248,7 +270,7 @@ if [ -x /etc/init.d/rpcd ]; then
     /etc/init.d/rpcd restart >/dev/null 2>&1 || true
 fi
 
-# 12. Disable autostart by default (manual start required via LuCI Diagnostics)
+# 13. Disable autostart by default (manual start required via LuCI Diagnostics)
 msg "⏸️ Служба NAZZHUB установлена (автозапуск sing-box отключен по требованию)..."
 /etc/init.d/nazzhub disable >/dev/null 2>&1 || true
 /etc/init.d/nazzhub stop >/dev/null 2>&1 || true
