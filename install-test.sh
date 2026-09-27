@@ -118,12 +118,24 @@ trap cleanup EXIT INT TERM
 ARCHIVE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${BRANCH}.tar.gz"
 ARCHIVE_FILE="$TMP_DIR/nazzhub.tar.gz"
 
+download_file() {
+    url="$1"
+    dest="$2"
+    if command -v curl >/dev/null 2>&1; then
+        if curl -fsSL --retry 3 --connect-timeout 15 "$url" -o "$dest"; then
+            return 0
+        fi
+    fi
+    if command -v wget >/dev/null 2>&1; then
+        if wget -T 15 -O "$dest" "$url"; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
 msg "🌐 Загрузка исходных файлов NAZZHUB из ${ARCHIVE_URL}..."
-if [ "$FETCHER" = "curl" ]; then
-    curl -fsSL --connect-timeout 15 "$ARCHIVE_URL" -o "$ARCHIVE_FILE" || fail "Не удалось скачать архив репозитория"
-else
-    wget -q -T 15 -O "$ARCHIVE_FILE" "$ARCHIVE_URL" || fail "Не удалось скачать архив репозитория"
-fi
+download_file "$ARCHIVE_URL" "$ARCHIVE_FILE" || fail "Не удалось скачать архив репозитория"
 
 msg "📂 Распаковка архива..."
 tar -xzf "$ARCHIVE_FILE" -C "$TMP_DIR"
