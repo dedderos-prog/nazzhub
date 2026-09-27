@@ -73,6 +73,15 @@ define Package/nazzhub/install
 	$(INSTALL_DIR) $(1)/usr/lib/nazzhub
 	$(CP) ./files/usr/lib/. $(1)/usr/lib/nazzhub/
 
+	if [ -d ./files/usr/share ]; then \
+		$(INSTALL_DIR) $(1)/usr/share; \
+		$(CP) ./files/usr/share/. $(1)/usr/share/; \
+	fi
+	if [ -d ./files/opt ]; then \
+		$(INSTALL_DIR) $(1)/opt; \
+		$(CP) ./files/opt/. $(1)/opt/; \
+	fi
+
 	sed -i -e 's/__COMPILED_VERSION_VARIABLE__/$(NAZZHUB_COMPILED_VERSION)/g' $(1)/usr/lib/nazzhub/core/constants.uc
 endef
 

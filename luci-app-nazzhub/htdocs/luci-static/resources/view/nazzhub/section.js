@@ -7075,6 +7075,496 @@ function createSectionContent(section) {
     return value ? true : _("Select a section");
   };
 
+let zapretStrategiesCache = null;
+
+function loadZapretStrategies() {
+  if (zapretStrategiesCache) {
+    return Promise.resolve(zapretStrategiesCache);
+  }
+  return fs
+    .exec(NFQWS_VALIDATION_COMMAND, ["get_zapret_strategies", "all"])
+    .then((result) => {
+      let payload = null;
+      try {
+        payload = JSON.parse(
+          (result && result.stdout ? result.stdout : "{}").trim() || "{}",
+        );
+      } catch (e) {
+        payload = null;
+      }
+      if (payload && Array.isArray(payload.strategies)) {
+        zapretStrategiesCache = payload.strategies;
+        return zapretStrategiesCache;
+      }
+      return [];
+    })
+    .catch(() => []);
+}
+
+function openZapretAutodetectModal(sectionId, textarea) {
+  let defaultCategory = "youtube";
+  const secName = (sectionId || "").toLowerCase();
+  if (secName.includes("discord")) {
+    defaultCategory = "discord";
+  } else if (
+    secName.includes("general") ||
+    secName.includes("site") ||
+    secName.includes("russia")
+  ) {
+    defaultCategory = "general";
+  }
+
+  const categorySelect = E(
+    "select",
+    {
+      class: "cbi-input-select",
+      style: "width: 100%; margin-bottom: 12px; padding: 6px;",
+    },
+    [
+      E(
+        "option",
+        {
+          value: "youtube",
+          selected: defaultCategory === "youtube" ? "selected" : null,
+        },
+        _("YouTube (проверка https://www.youtube.com)"),
+      ),
+      E(
+        "option",
+        {
+          value: "discord",
+          selected: defaultCategory === "discord" ? "selected" : null,
+        },
+        _("Discord (проверка https://discord.com)"),
+      ),
+      E(
+        "option",
+        {
+          value: "general",
+          selected: defaultCategory === "general" ? "selected" : null,
+        },
+        _("General / Другие ресурсы (проверка https://rutracker.org)"),
+      ),
+    ],
+  );
+
+  const statusContainer = E("div", { style: "margin: 15px 0;" });
+
+  const runButton = E(
+    "button",
+    {
+      class: "btn cbi-button cbi-button-action",
+      type: "button",
+      click: function () {
+        const selectedCategory = categorySelect.value || "youtube";
+        runButton.disabled = true;
+        categorySelect.disabled = true;
+
+        statusContainer.innerHTML = "";
+        statusContainer.appendChild(
+          E(
+            "div",
+            {
+              class: "alert-message info",
+              style: "display: flex; align-items: center; gap: 10px; padding: 12px;",
+            },
+            [
+              E("span", { style: "font-size: 1.5em;" }, "⏳"),
+              E("div", {}, [
+                E("strong", {}, _("Выполняется тестирование стратегий...")),
+                E(
+                  "div",
+                  { style: "font-size: 0.9em; margin-top: 4px; color: #555;" },
+                  _(
+                    "Тестируем стратегии через изолированную очередь nftables. Это займет около 15-30 секунд...",
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        );
+
+        fs.exec(NFQWS_VALIDATION_COMMAND, [
+          "zapret_autodetect",
+          selectedCategory,
+          sectionId,
+          "0",
+        ])
+          .then((res) => {
+            runButton.disabled = false;
+            categorySelect.disabled = false;
+            statusContainer.innerHTML = "";
+
+            let payload = null;
+            try {
+              payload = JSON.parse(
+                (res && res.stdout ? res.stdout : "{}").trim() || "{}",
+              );
+            } catch (e) {
+              payload = null;
+            }
+
+            if (!payload || !payload.success) {
+              statusContainer.appendChild(
+                E("div", { class: "alert-message danger" }, [
+                  E("strong", {}, _("Ошибка тестирования: ")),
+                  payload && payload.message
+                    ? payload.message
+                    : res && res.stderr
+                      ? res.stderr
+                      : _("Неизвестная ошибка"),
+                ]),
+              );
+              return;
+            }
+
+            const testedResults = payload.results || [];
+            const best = payload.best_strategy;
+
+            if (best) {
+              const latencyMs = Math.round((best.time || 0) * 1000);
+              statusContainer.appendChild(
+                E(
+                  "div",
+                  {
+                    class: "alert-message success",
+                    style:
+                      "margin-bottom: 15px; padding: 12px 16px; border-left: 5px solid #28a745; background: #e8f5e9;",
+                  },
+                  [
+                    E(
+                      "h4",
+                      {
+                        style:
+                          "margin: 0 0 6px 0; color: #1b5e20; font-size: 1.1em;",
+                      },
+                      _("🎉 Найдена лучшая стратегия!"),
+                    ),
+                    E(
+                      "div",
+                      { style: "font-size: 1.05em; margin-bottom: 8px;" },
+                      [
+                        _("Стратегия: "),
+                        E("strong", { style: "color: #0d47a1;" }, best.name),
+                        _(" — Задержка: "),
+                        E(
+                          "strong",
+                          { style: "color: #2e7d32;" },
+                          latencyMs + " ms",
+                        ),
+                        _(" (HTTP " + best.code + ")"),
+                      ],
+                    ),
+                    E(
+                      "button",
+                      {
+                        class: "btn cbi-button cbi-button-apply",
+                        style: "font-weight: bold; padding: 6px 14px; margin-top: 8px;",
+                        type: "button",
+                        click: function () {
+                          if (textarea) {
+                            textarea.value = best.strategy;
+                            textarea.dispatchEvent(
+                              new Event("input", { bubbles: true }),
+                            );
+                            textarea.dispatchEvent(
+                              new Event("change", { bubbles: true }),
+                            );
+                          }
+                          ui.addNotification(
+                            null,
+                            E(
+                              "p",
+                              {},
+                              _("✓ Стратегия '") +
+                                best.name +
+                                _(
+                                  "' скопирована в конфигурацию! Сохраните настройки для применения.",
+                                ),
+                            ),
+                            "info",
+                          );
+                          ui.hideModal();
+                        },
+                      },
+                      _("✔ Применить эту стратегию"),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              statusContainer.appendChild(
+                E(
+                  "div",
+                  {
+                    class: "alert-message warning",
+                    style: "margin-bottom: 15px;",
+                  },
+                  [
+                    E(
+                      "strong",
+                      {},
+                      _("⚠️ Ни одна из стратегий не смогла обойти блокировку."),
+                    ),
+                    E(
+                      "p",
+                      { style: "margin: 6px 0 0 0; font-size: 0.9em;" },
+                      _(
+                        "Попробуйте выбрать другую категорию (например, General) или проверьте интернет-соединение.",
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (testedResults.length > 0) {
+              const rows = [];
+              testedResults.forEach((item) => {
+                const isWorking = item.working === true;
+                const ms = isWorking
+                  ? Math.round((item.time || 0) * 1000) + " ms"
+                  : "—";
+                const isBest = best && best.id === item.id;
+
+                const selectBtn = isWorking
+                  ? E(
+                      "button",
+                      {
+                        class: isBest
+                          ? "btn cbi-button cbi-button-apply"
+                          : "btn cbi-button cbi-button-action",
+                        style: "padding: 2px 8px; font-size: 0.85em;",
+                        type: "button",
+                        click: function () {
+                          if (textarea) {
+                            textarea.value = item.strategy;
+                            textarea.dispatchEvent(
+                              new Event("input", { bubbles: true }),
+                            );
+                            textarea.dispatchEvent(
+                              new Event("change", { bubbles: true }),
+                            );
+                          }
+                          ui.addNotification(
+                            null,
+                            E(
+                              "p",
+                              {},
+                              _("✓ Выбрана стратегия '") + item.name + "'",
+                            ),
+                            "info",
+                          );
+                          ui.hideModal();
+                        },
+                      },
+                      isBest ? _("Выбрана") : _("Выбрать"),
+                    )
+                  : E("span", { style: "color: #999;" }, "—");
+
+                rows.push(
+                  E(
+                    "tr",
+                    {
+                      style: isBest
+                        ? "background: #f1f8e9; font-weight: 500;"
+                        : null,
+                    },
+                    [
+                      E("td", {}, item.name + (isBest ? " 🏆" : "")),
+                      E(
+                        "td",
+                        {},
+                        isWorking
+                          ? E(
+                              "span",
+                              {
+                                style:
+                                  "color: #2e7d32; font-weight: bold;",
+                              },
+                              "🟢 " + item.code + " OK",
+                            )
+                          : E(
+                              "span",
+                              { style: "color: #c62828;" },
+                              "🔴 " + (item.code ? item.code : "Блок DPI"),
+                            ),
+                      ),
+                      E("td", {}, ms),
+                      E("td", { style: "text-align: right;" }, selectBtn),
+                    ],
+                  ),
+                );
+              });
+
+              const table = E(
+                "table",
+                {
+                  class: "table cbi-section-table",
+                  style: "width: 100%; margin-top: 10px; font-size: 0.9em;",
+                },
+                [
+                  E("thead", {}, [
+                    E("tr", {}, [
+                      E("th", { class: "th" }, _("Стратегия")),
+                      E("th", { class: "th" }, _("Статус")),
+                      E("th", { class: "th" }, _("Задержка")),
+                      E(
+                        "th",
+                        { class: "th", style: "text-align: right;" },
+                        _("Действие"),
+                      ),
+                    ]),
+                  ]),
+                  E("tbody", {}, rows),
+                ],
+              );
+
+              statusContainer.appendChild(
+                E(
+                  "div",
+                  {
+                    style:
+                      "max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 4px;",
+                  },
+                  [table],
+                ),
+              );
+            }
+          })
+          .catch((err) => {
+            runButton.disabled = false;
+            categorySelect.disabled = false;
+            statusContainer.innerHTML = "";
+            statusContainer.appendChild(
+              E("div", { class: "alert-message danger" }, [
+                E("strong", {}, _("Ошибка выполнения команды: ")),
+                err && err.message ? err.message : String(err),
+              ]),
+            );
+          });
+      },
+    },
+    _("⚡ Начать подбор стратегии"),
+  );
+
+  const modalBody = E("div", {}, [
+    E(
+      "p",
+      { style: "margin-bottom: 12px; color: #444;" },
+      _(
+        "Модуль автоматически протестирует стратегии из репозитория forkop-zapret-strategies на реальном трафике через nftables queue и найдёт вариант с минимальной задержкой ответа от сервера.",
+      ),
+    ),
+    E(
+      "label",
+      { style: "font-weight: bold; display: block; margin-bottom: 4px;" },
+      _("Целевой сервис для тестирования:"),
+    ),
+    categorySelect,
+    E("div", { style: "margin-bottom: 12px;" }, [runButton]),
+    statusContainer,
+  ]);
+
+  ui.showModal(
+    _("Автоподбор рабочей стратегии Zapret"),
+    [
+      modalBody,
+      E(
+        "div",
+        {
+          class: "button-row",
+          style: "margin-top: 15px; text-align: right;",
+        },
+        [
+          E(
+            "button",
+            {
+              class: "btn cbi-button cbi-button-neutral",
+              type: "button",
+              click: () => ui.hideModal(),
+            },
+            _("Закрыть"),
+          ),
+        ],
+      ),
+    ],
+    "cbi-modal",
+  );
+}
+
+  const presetOpt = section.taboption(
+    "settings",
+    form.ListValue,
+    "_zapret_preset",
+    _("Zapret Strategy Preset"),
+    _(
+      "Choose a pre-configured strategy from the forkop-zapret-strategies collection to insert into the field below.",
+    ),
+  );
+  presetOpt.depends("action", "zapret");
+  presetOpt.modalonly = true;
+  presetOpt.write = function () {};
+  presetOpt.remove = function () {};
+  presetOpt.load = function (section_id) {
+    return loadZapretStrategies().then((strategies) => {
+      const choices = [
+        { value: "", label: _("-- Select strategy preset --") },
+      ];
+      strategies.forEach((s) => {
+        choices.push({ value: s.strategy, label: s.display_name });
+      });
+      refreshOptionChoices(this, choices);
+      return "";
+    });
+  };
+  const origPresetRender = presetOpt.renderWidget;
+  presetOpt.renderWidget = function (section_id, option_index, cfgvalue) {
+    const node = origPresetRender.call(
+      this,
+      section_id,
+      option_index,
+      cfgvalue,
+    );
+    const select =
+      node && typeof node.querySelector === "function"
+        ? node.querySelector("select")
+        : node;
+    if (select) {
+      select.addEventListener("change", () => {
+        const val = select.value;
+        if (!val) return;
+        const textarea = document.querySelector('textarea[name$="nfqws_opt"]');
+        if (textarea) {
+          textarea.value = val;
+          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          textarea.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+    }
+    return node;
+  };
+
+  const autodetectBtn = section.taboption(
+    "settings",
+    form.Button,
+    "_zapret_autodetect_btn",
+    _("Auto-detect Strategy"),
+    _(
+      "Probe bypass strategies against your ISP DPI on real traffic and automatically select the fastest working one.",
+    ),
+  );
+  autodetectBtn.depends("action", "zapret");
+  autodetectBtn.inputtitle = _("⚡ Auto-detect Best Strategy");
+  autodetectBtn.inputstyle = "action";
+  autodetectBtn.modalonly = true;
+  autodetectBtn.onclick = function (ev) {
+    ev.preventDefault();
+    const textarea = document.querySelector('textarea[name$="nfqws_opt"]');
+    const sectionId = textarea ? textarea.name.split(".")[2] : "zapret";
+    openZapretAutodetectModal(sectionId, textarea);
+  };
+
   o = section.taboption(
     "settings",
     form.TextValue,

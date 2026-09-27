@@ -83,7 +83,7 @@ fi
 msg "📦 Обновление списков пакетов..."
 pkg_update || warn "Не удалось обновить списки пакетов, пробуем продолжить..."
 
-CORE_DEPS="ca-bundle curl ucode ucode-mod-fs ucode-mod-uci nftables ip-full tar"
+CORE_DEPS="ca-bundle curl ucode ucode-mod-fs ucode-mod-uci nftables ip-full tar unzip"
 OPTIONAL_DEPS="kmod-inet-diag kmod-netlink-diag kmod-tun kmod-nft-tproxy kmod-nft-nat coreutils-base64 bind-dig luci-base"
 
 MISSING_DEPS=""
@@ -184,6 +184,31 @@ chmod 0755 /usr/bin/nazzhub
 cp -rf "$EXTRACTED_DIR/nazzhub/files/usr/lib/"* /usr/lib/nazzhub/
 # Version replacement
 sed -i 's/__COMPILED_VERSION_VARIABLE__/1.0.0/g' /usr/lib/nazzhub/core/constants.uc 2>/dev/null || true
+
+# Strategies and assets
+if [ -d "$EXTRACTED_DIR/nazzhub/files/usr/share" ]; then
+    mkdir -p /usr/share
+    cp -rf "$EXTRACTED_DIR/nazzhub/files/usr/share/"* /usr/share/
+    msg "   ✓ Установлены стратегии обхода zapret в /usr/share/nazzhub/zapret-strategies"
+fi
+
+if [ -d "$EXTRACTED_DIR/nazzhub/files/opt" ]; then
+    mkdir -p /opt/zapret/files/fake
+    cp -rf "$EXTRACTED_DIR/nazzhub/files/opt/"* /opt/
+    msg "   ✓ Установлены файлы fake пакетов в /opt/zapret/files/fake"
+fi
+
+# Zapret auto-installation by default
+if [ ! -x /opt/zapret/nfq/nfqws ]; then
+    msg "📥 zapret не найден в системе, выполняем автоустановку по умолчанию..."
+    /usr/bin/nazzhub component_action zapret install || warn "Автоустановка zapret завершилась с предупреждением (можно установить через LuCI)"
+    if [ -d "$EXTRACTED_DIR/nazzhub/files/opt" ]; then
+        mkdir -p /opt/zapret/files/fake
+        cp -rf "$EXTRACTED_DIR/nazzhub/files/opt/"* /opt/ 2>/dev/null || true
+    fi
+else
+    msg "   ✓ zapret уже установлен в системе"
+fi
 
 # 10. Deploy LuCI app files
 msg "🖥️ Копирование файлов веб-интерфейса LuCI..."

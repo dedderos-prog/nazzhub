@@ -124,6 +124,12 @@ function show_help() {
     print("                            Validate an NFQWS2 strategy and print JSON result\n");
     print("    validate_byedpi_strategy_json\n");
     print("                            Validate a ByeDPI ciadpi strategy and print JSON result\n");
+    print("    zapret_autodetect [category] [section] [apply]\n");
+    print("                            Auto-detect best working Zapret strategy (youtube, discord, general)\n");
+    print("    get_zapret_strategies [category]\n");
+    print("                            List available Zapret strategies from collection in JSON\n");
+    print("    apply_zapret_strategy <section> <strategy>\n");
+    print("                            Apply a Zapret strategy to a configured section\n");
 }
 
 function command_spec(command) {
@@ -191,6 +197,9 @@ function command_spec(command) {
         validate_nfqws_strategy_json: [ "diagnostics/runtime.uc", "validate-nfqws-strategy-json", 1 ],
         validate_nfqws2_strategy_json: [ "diagnostics/runtime.uc", "validate-nfqws2-strategy-json", 1 ],
         validate_byedpi_strategy_json: [ "providers/byedpi/validator.uc", "validate-json", 1 ],
+        zapret_autodetect: [ "providers/zapret/autodetect.uc", "autodetect", 3 ],
+        get_zapret_strategies: [ "providers/zapret/autodetect.uc", "list-strategies", 1 ],
+        apply_zapret_strategy: [ "providers/zapret/autodetect.uc", "apply", 2 ],
         package_prerm: [ "service/package.uc", "prerm", 1 ],
         package_postinst: [ "service/package.uc", "postinst", 0 ],
         luci_postinst: [ "service/package.uc", "luci-postinst", 0 ]

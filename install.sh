@@ -1969,6 +1969,13 @@ install_ui_packages() {
     fi
 }
 
+install_zapret_component() {
+    if [ ! -x /opt/zapret/nfq/nfqws ]; then
+        msg "Installing zapret component by default..."
+        /usr/bin/nazzhub component_action zapret install || warn "Failed to automatically install zapret; you can install it later via LuCI"
+    fi
+}
+
 post_install() {
     NAZZHUB_WAS_ENABLED="$NAZZHUB_WAS_ENABLED" NAZZHUB_WAS_RUNNING="$NAZZHUB_WAS_RUNNING" \
         install_json_ucode installer-post-install ||
@@ -2003,6 +2010,7 @@ main() {
     migrate_legacy_configuration
     install_ui_packages
     install_selected_sing_box
+    install_zapret_component
     post_install
 
     msg "NAZZHUB $NAZZHUB_PACKAGE_VERSION has been installed successfully"
