@@ -8379,13 +8379,14 @@ function openZapretAutodetectModal(sectionId, textarea) {
 
   const builtInRulesetOption = section.taboption(
     "conditions",
-    form.DynamicList,
+    form.MultiValue,
     "community_lists",
     _("Built-in rule sets"),
-    _("Select a predefined domain list"),
+    _("Отметьте нужные списки галочками. Выбранные списки объединяются."),
   );
   builtInRulesetOption.modalonly = true;
-  builtInRulesetOption.placeholder = _("Service list");
+  builtInRulesetOption.create = false;
+  builtInRulesetOption.placeholder = _("Списки сервисов");
   builtInRulesetOption.load = function (section_id) {
     loadRulesetValues(this);
     return getBuiltInRulesetReferences(section_id);

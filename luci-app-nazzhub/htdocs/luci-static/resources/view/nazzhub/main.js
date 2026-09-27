@@ -954,7 +954,7 @@ async function withTimeout(promise, timeoutMs, operationName, timeoutMessage = _
 }
 
 // src/constants.ts
-var NAZZHUB_UCI_PACKAGE = "nazzhub"; var NAZZHUB_UCI_PACKAGE = "nazzhub";
+var NAZZHUB_UCI_PACKAGE = "nazzhub";
 var NAZZHUB_LUCI_APP_VERSION = "__COMPILED_VERSION_VARIABLE__";
 var NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT = "nazzhub:action-providers-availability";
 var FAKEIP_CHECK_DOMAIN = "fakeip.podkop.fyi";
@@ -993,12 +993,23 @@ var DOMAIN_LIST_OPTIONS = {
   hetzner: "Hetzner ASN",
   ovh: "OVH ASN",
   digitalocean: "Digital Ocean ASN",
-  cloudfront: "CloudFront ASN"
+  cloudfront: "CloudFront ASN",
+  xbox: "Xbox (Live & Services)",
+  playstation: "PlayStation (PSN & Services)"
 };
 var DNS_SERVER_OPTIONS = {
   "1.1.1.1": "1.1.1.1 (Cloudflare)",
   "8.8.8.8": "8.8.8.8 (Google)",
   "9.9.9.9": "9.9.9.9 (Quad9)",
+  "77.88.8.8": "77.88.8.8 (Yandex DNS)",
+  "77.88.8.1": "77.88.8.1 (Yandex DNS)",
+  "208.67.222.222": "208.67.222.222 (OpenDNS)",
+  "208.67.220.220": "208.67.220.220 (OpenDNS)",
+  "223.5.5.5": "223.5.5.5 (AliDNS)",
+  "223.6.6.6": "223.6.6.6 (AliDNS)",
+  "xbox-dns.ru": "xbox-dns.ru (Xbox Smart DoT)",
+  "xbox-dns.ru/dns-query": "xbox-dns.ru/dns-query (Xbox Smart DoH)",
+  "111.88.96.54": "111.88.96.54 (Xbox DNS IP)",
   "dns.adguard-dns.com": "dns.adguard-dns.com (AdGuard Default)",
   "unfiltered.adguard-dns.com": "unfiltered.adguard-dns.com (AdGuard Unfiltered)",
   "family.adguard-dns.com": "family.adguard-dns.com (AdGuard Family)",
@@ -1012,7 +1023,11 @@ var BOOTSTRAP_DNS_SERVER_OPTIONS = {
   "8.8.8.8": "8.8.8.8 (Google DNS)",
   "8.8.4.4": "8.8.4.4 (Google DNS)",
   "9.9.9.9": "9.9.9.9 (Quad9 DNS)",
-  "9.9.9.11": "9.9.9.11 (Quad9 DNS)"
+  "9.9.9.11": "9.9.9.11 (Quad9 DNS)",
+  "208.67.222.222": "208.67.222.222 (OpenDNS)",
+  "208.67.220.220": "208.67.220.220 (OpenDNS)",
+  "223.5.5.5": "223.5.5.5 (AliDNS)",
+  "223.6.6.6": "223.6.6.6 (AliDNS)"
 };
 var COMMAND_TIMEOUT = 1e4;
 

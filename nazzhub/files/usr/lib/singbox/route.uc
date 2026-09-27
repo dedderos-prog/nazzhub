@@ -43,6 +43,12 @@ function config(settings, runtime) {
         result.default_interface = output_network_interface;
     if (bool_option(settings, "disable_quic", false))
         push(result.rules, { action: "reject", inbound: runtime_constants.TPROXY_INBOUND_TAG, protocol: "quic" });
+    if (bool_option(settings, "exclude_bittorrent", false))
+        push(result.rules, {
+            action: "route",
+            protocol: "bittorrent",
+            outbound: runtime_constants.BYPASS_OUTBOUND_TAG
+        });
 
     return result;
 }

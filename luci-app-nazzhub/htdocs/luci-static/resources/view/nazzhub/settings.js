@@ -452,6 +452,17 @@ function createSettingsContent(section, capabilities) {
 
   o = section.option(
     form.Flag,
+    "exclude_bittorrent",
+    _("Исключить BitTorrent"),
+    _(
+      "Отправлять трафик BitTorrent и DHT напрямую, в обход VPN и прокси. HTTP/HTTPS-трекеры могут по-прежнему идти по правилам секции.",
+    ),
+  );
+  o.default = "0";
+  o.rmempty = false;
+
+  o = section.option(
+    form.Flag,
     "list_update_enabled",
     _("Enable list updates"),
     _("Enable automatic updates for remote lists and rule sets"),

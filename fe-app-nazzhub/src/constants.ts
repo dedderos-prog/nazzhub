@@ -1,11 +1,7 @@
 export const NAZZHUB_UCI_PACKAGE = 'nazzhub';
-export const NAZZHUB_UCI_PACKAGE = NAZZHUB_UCI_PACKAGE;
 export const NAZZHUB_LUCI_APP_VERSION = '__COMPILED_VERSION_VARIABLE__';
-export const NAZZHUB_LUCI_APP_VERSION = NAZZHUB_LUCI_APP_VERSION;
 export const NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT =
   'nazzhub:action-providers-availability';
-export const NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT =
-  NAZZHUB_ACTION_PROVIDERS_AVAILABILITY_EVENT;
 export const FAKEIP_CHECK_DOMAIN = 'fakeip.podkop.fyi';
 export const IP_CHECK_DOMAIN = 'ip.podkop.fyi';
 export const DEFAULT_LATENCY_TEST_URL = 'https://www.gstatic.com/generate_204';
@@ -44,12 +40,23 @@ export const DOMAIN_LIST_OPTIONS = {
   ovh: 'OVH ASN',
   digitalocean: 'Digital Ocean ASN',
   cloudfront: 'CloudFront ASN',
+  xbox: 'Xbox (Live & Services)',
+  playstation: 'PlayStation (PSN & Services)',
 };
 
 export const DNS_SERVER_OPTIONS = {
   '1.1.1.1': '1.1.1.1 (Cloudflare)',
   '8.8.8.8': '8.8.8.8 (Google)',
   '9.9.9.9': '9.9.9.9 (Quad9)',
+  '77.88.8.8': '77.88.8.8 (Yandex DNS)',
+  '77.88.8.1': '77.88.8.1 (Yandex DNS)',
+  '208.67.222.222': '208.67.222.222 (OpenDNS)',
+  '208.67.220.220': '208.67.220.220 (OpenDNS)',
+  '223.5.5.5': '223.5.5.5 (AliDNS)',
+  '223.6.6.6': '223.6.6.6 (AliDNS)',
+  'xbox-dns.ru': 'xbox-dns.ru (Xbox Smart DoT)',
+  'xbox-dns.ru/dns-query': 'xbox-dns.ru/dns-query (Xbox Smart DoH)',
+  '111.88.96.54': '111.88.96.54 (Xbox DNS IP)',
   'dns.adguard-dns.com': 'dns.adguard-dns.com (AdGuard Default)',
   'unfiltered.adguard-dns.com':
     'unfiltered.adguard-dns.com (AdGuard Unfiltered)',
@@ -65,6 +72,10 @@ export const BOOTSTRAP_DNS_SERVER_OPTIONS = {
   '8.8.4.4': '8.8.4.4 (Google DNS)',
   '9.9.9.9': '9.9.9.9 (Quad9 DNS)',
   '9.9.9.11': '9.9.9.11 (Quad9 DNS)',
+  '208.67.222.222': '208.67.222.222 (OpenDNS)',
+  '208.67.220.220': '208.67.220.220 (OpenDNS)',
+  '223.5.5.5': '223.5.5.5 (AliDNS)',
+  '223.6.6.6': '223.6.6.6 (AliDNS)',
 };
 
 export const COMMAND_TIMEOUT = 10000; // 10 seconds

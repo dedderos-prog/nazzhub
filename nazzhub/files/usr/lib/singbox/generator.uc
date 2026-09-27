@@ -1432,8 +1432,10 @@ function add_proxy_selector(config, section, selector_tags, urltest_candidate_ta
         selector_default = length(urltest_tags) > 0 ? urltest_tags[0] : priority_tags[0];
     }
 
-    if (length(selector_outbounds) == 0)
-        runtime_generate_unsupported("dashboard server filtering produced no usable outbounds");
+    if (length(selector_outbounds) == 0) {
+        push(selector_outbounds, runtime_constants.BYPASS_OUTBOUND_TAG);
+        selector_default = runtime_constants.BYPASS_OUTBOUND_TAG;
+    }
 
     push(config.outbounds, {
         type: "selector",
@@ -2229,8 +2231,10 @@ function add_connections_outbound(config, section, taken) {
     add_connection_interfaces(config, state, section, taken, selector_tags, urltest_candidate_tags);
     add_connection_json_outbounds(config, state, section, taken, selector_tags, urltest_candidate_tags);
 
-    if (length(selector_tags) == 0)
-        runtime_generate_unsupported("connection section has no usable outbounds");
+    if (length(selector_tags) == 0) {
+        push(selector_tags, runtime_constants.BYPASS_OUTBOUND_TAG);
+        state.outboundMetadata.names[runtime_constants.BYPASS_OUTBOUND_TAG] = "Direct (No Subscription)";
+    }
 
     if (section_needs_country_is(section)) {
         let previous_state = read_json_file(runtime_subscription.section_cache_path(section_name));
