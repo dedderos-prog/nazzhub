@@ -405,17 +405,30 @@ fi
 msg "   ✓ Распаковано в $EXTRACTED_DIR"
 
 # 8. Stop old/conflicting services if running
-if [ -x /etc/init.d/nazzhub ]; then
-    /etc/init.d/nazzhub stop 2>/dev/null || true
-fi
-if [ -x /etc/init.d/forkop ]; then
-    /etc/init.d/forkop stop 2>/dev/null || true
-    /etc/init.d/forkop disable 2>/dev/null || true
-fi
-if [ -x /etc/init.d/sing-box ]; then
-    /etc/init.d/sing-box stop 2>/dev/null || true
-    /etc/init.d/sing-box disable 2>/dev/null || true
-fi
+safe_stop_service() {
+    svc="$1"
+    if [ -x "/etc/init.d/$svc" ]; then
+        (/etc/init.d/"$svc" stop >/dev/null 2>&1) &
+        spid=$!
+        sec=0
+        while kill -0 "$spid" 2>/dev/null && [ "$sec" -lt 5 ]; do
+            sleep 1
+            sec=$((sec + 1))
+        done
+        kill -9 "$spid" 2>/dev/null || true
+    fi
+}
+
+msg "🛑 Остановка служб и сброс блокировок..."
+safe_stop_service nazzhub
+killall -9 nazzhub sing-box nfqws2 ciadpi 2>/dev/null || true
+rm -rf /var/run/nazzhub.reload.lock /var/run/nazzhub/ui-state/*.lock 2>/dev/null || true
+
+safe_stop_service forkop
+[ -x /etc/init.d/forkop ] && /etc/init.d/forkop disable 2>/dev/null || true
+
+safe_stop_service sing-box
+[ -x /etc/init.d/sing-box ] && /etc/init.d/sing-box disable 2>/dev/null || true
 
 # 9. Deploy backend files
 msg "⚙️ Копирование файлов службы NAZZHUB..."
@@ -525,7 +538,7 @@ fi
 # 13. Disable autostart by default (manual start required via LuCI Diagnostics)
 msg "⏸️ Служба NAZZHUB установлена (автозапуск sing-box отключен по требованию)..."
 /etc/init.d/nazzhub disable >/dev/null 2>&1 || true
-/etc/init.d/nazzhub stop >/dev/null 2>&1 || true
+safe_stop_service nazzhub
 
 msg "=========================================================="
 msg "🎉 NAZZHUB успешно установлен!"
